@@ -7,7 +7,7 @@
   <body>
     <p>Elo moj mail szefuncio@nevelose.com nie umiem robic strony ok ok o k ok <strong>sraczka</strong> elo. ZiomekGPT pomaga przy robieniu strony pozdro</p>
     <p>syzyfowa praca czy cos...</p>
-    <img src="./syzyf.jpg" alt="My Image">
+    
   </body>
 </html>
 
@@ -31,7 +31,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chatroom with Cooldown</title>
+    <title>Chatroom with Letter-Based Cooldown</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -75,10 +75,10 @@
 </head>
 <body>
     <div id="chat">
-        <h2>Chatroom with Cooldown</h2>
+        <h2>Chatroom with Letter-Based Cooldown</h2>
         <div id="messages"></div>
         <div id="input">
-            <input id="message" type="text" placeholder="Type a message">
+            <input id="message" type="text" placeholder="Type a message (max 500 characters)">
             <button id="sendButton">Send</button>
         </div>
     </div>
@@ -99,7 +99,7 @@
             measurementId: "G-PHPR2T1DNJ"
         };
 
-        document.addEventListener("DOMContentLoaded", () => {
+        document.addEventListener("DOMContentLoaded", async () => {
             console.log("DOM fully loaded and parsed");
 
             // Initialize Firebase
@@ -107,15 +107,28 @@
             const db = getDatabase(app);
             console.log("Firebase initialized");
 
+            // Fetch Blacklisted Nicknames
+            const blacklistedNicknames = await fetch('blacklisted.txt')
+                .then(response => response.text())
+                .then(data => data.split('\n').map(name => name.trim().toLowerCase()))
+                .catch(err => {
+                    console.error("Error loading blacklist:", err);
+                    return [];
+                });
+
+            console.log("Blacklisted Nicknames:", blacklistedNicknames);
+
             // Prompt for nickname
-            let nickname = localStorage.getItem('nickname');
-            if (!nickname) {
+            let nickname = null;
+            while (!nickname || blacklistedNicknames.includes(nickname.toLowerCase())) {
                 nickname = prompt("Enter your nickname:");
                 if (!nickname || nickname.trim() === "") {
                     nickname = "Anonymous";
+                } else if (blacklistedNicknames.includes(nickname.toLowerCase())) {
+                    alert("This nickname is not allowed. Please choose a different one.");
                 }
-                localStorage.setItem('nickname', nickname);
             }
+            localStorage.setItem('nickname', nickname);
             console.log("Nickname:", nickname);
 
             // Assign a random color
@@ -133,7 +146,8 @@
 
             // Cooldown Variables
             let lastMessageTimestamp = 0; // Store the timestamp of the last sent message
-            const cooldownTime = 5000; // Cooldown time in milliseconds (5 seconds)
+            const cooldownPerLetter = 500; // Cooldown time per letter (milliseconds)
+            const maxMessageLength = 500; // Maximum allowed characters per message
 
             // Verify DOM elements are found
             if (!messagesDiv || !input || !sendButton) {
@@ -145,14 +159,23 @@
 
             // Send a message
             function sendMessage() {
+                const message = input.value.trim(); // Trim whitespace
+
+                // Check message length
+                if (message.length > maxMessageLength) {
+                    alert(`Messages cannot exceed ${maxMessageLength} characters.`);
+                    return;
+                }
+
+                // Cooldown based on message length
                 const now = Date.now();
-                if (now - lastMessageTimestamp < cooldownTime) {
-                    const remainingTime = Math.ceil((cooldownTime - (now - lastMessageTimestamp)) / 1000);
+                const messageCooldown = message.length * cooldownPerLetter; // Calculate cooldown
+                if (now - lastMessageTimestamp < messageCooldown) {
+                    const remainingTime = Math.ceil((messageCooldown - (now - lastMessageTimestamp)) / 1000);
                     alert(`Please wait ${remainingTime} seconds before sending another message.`);
                     return;
                 }
 
-                const message = input.value.trim(); // Trim whitespace
                 if (message) {
                     const messagesRef = ref(db, 'messages');
                     push(messagesRef, {
