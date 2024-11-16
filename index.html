@@ -170,7 +170,22 @@ console.log("User UID:", userUID);
             }
 
             console.log("All DOM elements found");
+            
+          
+          // Change nickname functionality
+            const changeNicknameButton = document.getElementById('changeNicknameButton');
+            changeNicknameButton.addEventListener('click', () => {
+                const newNickname = nicknameInput.value.trim();
+                if (newNickname && newNickname !== nickname) {
+                    nickname = newNickname;
+                    localStorage.setItem('nickname', nickname); // Save new nickname to localStorage
+                    alert("Nickname updated to: " + nickname);
+                } else {
+                    alert("Please enter a valid nickname.");
+                }
+            });
 
+          
             // Send a message
             function sendMessage() {
                 const message = input.value.trim(); // Trim whitespace
