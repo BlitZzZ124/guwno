@@ -93,31 +93,39 @@
   measurementId: "G-PHPR2T1DNJ"
     };
 
-    // Initialize Firebase
-    const app = firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+// Initialize Firebase
+const app = firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 
-    // DOM Elements
-    const messagesDiv = document.getElementById('messages');
-    const input = document.getElementById('message');
+// DOM Elements
+const messagesDiv = document.getElementById('messages');
+const input = document.getElementById('message');
 
-    // Send a message
-    function sendMessage() {
-        const message = input.value;
-        if (message) {
-            db.ref('messages').push().set({
-                message: message,
-                timestamp: Date.now()
-            });
-            input.value = '';
-        }
+// Send a message
+function sendMessage() {
+    const message = input.value.trim(); // Trim whitespace
+    if (message) {
+        db.ref('messages').push({
+            message: message,
+            timestamp: Date.now()
+        }).then(() => {
+            input.value = ''; // Clear the input after sending
+        }).catch((error) => {
+            console.error("Error sending message:", error);
+        });
+    } else {
+        alert("Please enter a message.");
     }
+}
 
-    // Listen for new messages
-    db.ref('messages').on('child_added', (snapshot) => {
-        const data = snapshot.val();
+// Listen for new messages
+db.ref('messages').on('child_added', (snapshot) => {
+    const data = snapshot.val();
+    if (data) {
         const newMessage = document.createElement('p');
         newMessage.textContent = data.message;
         messagesDiv.appendChild(newMessage);
-    });
+    }
+});
+
 </script>
