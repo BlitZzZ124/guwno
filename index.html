@@ -6,7 +6,7 @@
   </head>
   <body>
     <p>Elo moj mail szefuncio@nevelose.com nie umiem robic strony ok ok o k ok <strong>sraczka</strong> elo. ZiomekGPT pomaga przy robieniu strony pozdro</p>
-    <p>2</p>
+    <p>syzyfowa praca czy cos...</p>
   </body>
 </html>
 
@@ -26,10 +26,10 @@
 
 
 <script type="module">
-    // Firebase configuration
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-app.js";
     import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-database.js";
 
+    // Firebase configuration
     const firebaseConfig = {
         apiKey: "AIzaSyCk8jPJpt_83lhgl1j2R3_tLK776wyodpA",
         authDomain: "chat-85d04.firebaseapp.com",
@@ -41,47 +41,65 @@
         measurementId: "G-PHPR2T1DNJ"
     };
 
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+    document.addEventListener("DOMContentLoaded", () => {
+        console.log("DOM fully loaded and parsed");
 
-    // DOM Elements
-    const messagesDiv = document.getElementById('messages');
-    const input = document.getElementById('message');
-    const sendButton = document.getElementById('sendButton');
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        console.log("Firebase initialized");
 
-    // Send a message
-    function sendMessage() {
-        const message = input.value.trim(); // Trim whitespace
-        if (message) {
-            const messagesRef = ref(db, 'messages');
-            push(messagesRef, {
-                message: message,
-                timestamp: Date.now()
-            }).then(() => {
-                input.value = ''; // Clear the input after sending
-            }).catch((error) => {
-                console.error("Error sending message:", error);
-            });
-        } else {
-            alert("Please enter a message.");
+        // DOM Elements
+        const messagesDiv = document.getElementById('messages');
+        const input = document.getElementById('message');
+        const sendButton = document.getElementById('sendButton');
+
+        // Verify DOM elements are found
+        if (!messagesDiv || !input || !sendButton) {
+            console.error("One or more DOM elements not found!");
+            return;
         }
-    }
 
-    // Listen for new messages
-    const messagesRef = ref(db, 'messages');
-    onChildAdded(messagesRef, (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-            const newMessage = document.createElement('p');
-            newMessage.textContent = data.message;
-            messagesDiv.appendChild(newMessage);
+        console.log("All DOM elements found");
+
+        // Send a message
+        function sendMessage() {
+            const message = input.value.trim(); // Trim whitespace
+            if (message) {
+                const messagesRef = ref(db, 'messages');
+                push(messagesRef, {
+                    message: message,
+                    timestamp: Date.now()
+                })
+                    .then(() => {
+                        console.log("Message sent:", message);
+                        input.value = ''; // Clear the input after sending
+                    })
+                    .catch((error) => {
+                        console.error("Error sending message:", error);
+                    });
+            } else {
+                alert("Please enter a message.");
+            }
         }
+
+        // Listen for new messages
+        const messagesRef = ref(db, 'messages');
+        onChildAdded(messagesRef, (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                const newMessage = document.createElement('p');
+                newMessage.textContent = data.message;
+                messagesDiv.appendChild(newMessage);
+                console.log("New message added:", data.message);
+            }
+        });
+
+        // Add event listener to the send button
+        sendButton.addEventListener('click', sendMessage);
     });
-
-    // Add event listener to the send button
-    sendButton.addEventListener('click', sendMessage);
 </script>
+
 
 
 
