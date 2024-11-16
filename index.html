@@ -70,12 +70,9 @@
         const app = firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // DOM Elements
-        const messagesDiv = document.getElementById('messages');
-        const input = document.getElementById('message');
-
         // Send a message
         function sendMessage() {
+            const input = document.getElementById('message'); // Declare input inside the function
             const message = input.value.trim(); // Trim whitespace
             if (message) {
                 db.ref('messages').push({
@@ -95,6 +92,7 @@
         db.ref('messages').on('child_added', (snapshot) => {
             const data = snapshot.val();
             if (data) {
+                const messagesDiv = document.getElementById('messages');
                 const newMessage = document.createElement('p');
                 newMessage.textContent = data.message;
                 messagesDiv.appendChild(newMessage);
@@ -103,4 +101,5 @@
     </script>
 </body>
 </html>
+
 
