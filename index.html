@@ -26,81 +26,133 @@
 
 
 
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-app.js";
-    import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-database.js";
-
-    // Firebase configuration
-    const firebaseConfig = {
-        apiKey: "AIzaSyCk8jPJpt_83lhgl1j2R3_tLK776wyodpA",
-        authDomain: "chat-85d04.firebaseapp.com",
-        databaseURL: "https://chat-85d04-default-rtdb.europe-west1.firebasedatabase.app",
-        projectId: "chat-85d04",
-        storageBucket: "chat-85d04.firebasestorage.app",
-        messagingSenderId: "1067572204091",
-        appId: "1:1067572204091:web:11f459b6760c4a4dcec21e",
-        measurementId: "G-PHPR2T1DNJ"
-    };
-
-    document.addEventListener("DOMContentLoaded", () => {
-        console.log("DOM fully loaded and parsed");
-
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-        console.log("Firebase initialized");
-
-        // DOM Elements
-        const messagesDiv = document.getElementById('messages');
-        const input = document.getElementById('message');
-        const sendButton = document.getElementById('sendButton');
-
-        // Verify DOM elements are found
-        if (!messagesDiv || !input || !sendButton) {
-            console.error("One or more DOM elements not found!");
-            return;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatroom</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
         }
+        #chat {
+            max-width: 500px;
+            margin: 50px auto;
+            text-align: center;
+        }
+        #messages {
+            border: 1px solid #ddd;
+            height: 300px;
+            overflow-y: auto;
+            padding: 10px;
+            background: #f9f9f9;
+        }
+        #input {
+            display: flex;
+            margin-top: 10px;
+        }
+        #input input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+        #input button {
+            padding: 10px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="chat">
+        <h2>Chatroom</h2>
+        <div id="messages"></div>
+        <div id="input">
+            <input id="message" type="text" placeholder="Type a message">
+            <button id="sendButton">Send</button>
+        </div>
+    </div>
 
-        console.log("All DOM elements found");
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-app.js";
+        import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-database.js";
 
-        // Send a message
-        function sendMessage() {
-            const message = input.value.trim(); // Trim whitespace
-            if (message) {
-                const messagesRef = ref(db, 'messages');
-                push(messagesRef, {
-                    message: message,
-                    timestamp: Date.now()
-                })
-                    .then(() => {
-                        console.log("Message sent:", message);
-                        input.value = ''; // Clear the input after sending
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCk8jPJpt_83lhgl1j2R3_tLK776wyodpA",
+            authDomain: "chat-85d04.firebaseapp.com",
+            databaseURL: "https://chat-85d04-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "chat-85d04",
+            storageBucket: "chat-85d04.firebasestorage.app",
+            messagingSenderId: "1067572204091",
+            appId: "1:1067572204091:web:11f459b6760c4a4dcec21e",
+            measurementId: "G-PHPR2T1DNJ"
+        };
+
+        document.addEventListener("DOMContentLoaded", () => {
+            console.log("DOM fully loaded and parsed");
+
+            // Initialize Firebase
+            const app = initializeApp(firebaseConfig);
+            const db = getDatabase(app);
+            console.log("Firebase initialized");
+
+            // DOM Elements
+            const messagesDiv = document.getElementById('messages');
+            const input = document.getElementById('message');
+            const sendButton = document.getElementById('sendButton');
+
+            // Verify DOM elements are found
+            if (!messagesDiv || !input || !sendButton) {
+                console.error("One or more DOM elements not found!");
+                return;
+            }
+
+            console.log("All DOM elements found");
+
+            // Send a message
+            function sendMessage() {
+                const message = input.value.trim(); // Trim whitespace
+                if (message) {
+                    const messagesRef = ref(db, 'messages');
+                    push(messagesRef, {
+                        message: message,
+                        timestamp: Date.now()
                     })
-                    .catch((error) => {
-                        console.error("Error sending message:", error);
-                    });
-            } else {
-                alert("Please enter a message.");
+                        .then(() => {
+                            console.log("Message sent:", message);
+                            input.value = ''; // Clear the input after sending
+                        })
+                        .catch((error) => {
+                            console.error("Error sending message:", error);
+                        });
+                } else {
+                    alert("Please enter a message.");
+                }
             }
-        }
 
-        // Listen for new messages
-        const messagesRef = ref(db, 'messages');
-        onChildAdded(messagesRef, (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-                const newMessage = document.createElement('p');
-                newMessage.textContent = data.message;
-                messagesDiv.appendChild(newMessage);
-                console.log("New message added:", data.message);
-            }
+            // Listen for new messages
+            const messagesRef = ref(db, 'messages');
+            onChildAdded(messagesRef, (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    const newMessage = document.createElement('p');
+                    newMessage.textContent = data.message;
+                    messagesDiv.appendChild(newMessage);
+                    console.log("New message added:", data.message);
+                }
+            });
+
+            // Add event listener to the send button
+            sendButton.addEventListener('click', sendMessage);
         });
-
-        // Add event listener to the send button
-        sendButton.addEventListener('click', sendMessage);
-    });
-</script>
-
+    </script>
+</body>
+</html>
 
 
 
