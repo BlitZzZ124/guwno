@@ -31,7 +31,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chatroom with Unique UID</title>
+    <title>Chatroom nevelose.xyz</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -114,7 +114,7 @@
             // Generate or Retrieve Unique UID
             let userUID = localStorage.getItem('userUID');
             if (!userUID) {
-                userUID = `user-${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
+                userUID = `user-${Math.floor(Math.random() * 1000000000)}`;
                 localStorage.setItem('userUID', userUID);
             }
             console.log("User UID:", userUID);
@@ -158,7 +158,7 @@
 
             // Cooldown Variables
             let lastMessageTimestamp = 0; // Store the timestamp of the last sent message
-            const cooldownPerLetter = 500; // Cooldown time per letter (milliseconds)
+            const cooldownPerLetter = 0; // Cooldown time per letter (milliseconds)
             const maxMessageLength = 500; // Maximum allowed characters per message
 
             // Verify DOM elements are found
