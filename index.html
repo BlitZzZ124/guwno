@@ -5,7 +5,7 @@
     <link rel="shortcut icon" type="x-icon" href="fajny_el_gato.png"
   </head>
   <body>
-    <p>Elo moj mail szefuncio@nevelose.com nie umiem robic strony ok ok o k ok <strong>sraczka</strong> elo.</p>
+    <p>Elo moj mail szefuncio@nevelose.com nie umiem robic strony ok ok o k ok <strong>sraczka</strong> elo. ZiomekGPT pomaga przy robieniu strony pozdro</p>
   </body>
 </html>
 
@@ -54,7 +54,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-database.js"></script>
 
     <script>
-        // Your Firebase configuration
+        // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyCk8jPJpt_83lhgl1j2R3_tLK776wyodpA",
             authDomain: "chat-85d04.firebaseapp.com",
@@ -68,14 +68,14 @@
 
         // Initialize Firebase
         const app = firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
+        const db = firebase.database(); // Initialize database before any usage
 
         // Send a message
         function sendMessage() {
-            const input = document.getElementById('message'); // Declare input inside the function
+            const input = document.getElementById('message'); // Get the input field
             const message = input.value.trim(); // Trim whitespace
             if (message) {
-                db.ref('messages').push({
+                db.ref('messages').push({ // Use the initialized 'db' here
                     message: message,
                     timestamp: Date.now()
                 }).then(() => {
