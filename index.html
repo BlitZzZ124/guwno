@@ -117,7 +117,7 @@ function sendMessage() {
         alert("Please enter a message.");
     }
 }
-
+<button onclick="sendMessage()">Send</button>
 // Listen for new messages
 db.ref('messages').on('child_added', (snapshot) => {
     const data = snapshot.val();
