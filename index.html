@@ -7,7 +7,7 @@
   <body>
     <p>Elo moj mail szefuncio@nevelose.com nie umiem robic strony ok ok o k ok <strong>sraczka</strong> elo. ZiomekGPT pomaga przy robieniu strony pozdro</p>
     <p>syzyfowa praca czy cos...</p>
-    <img src=”syzyf.jpg”>
+    <img src="./syzyf.jpg" alt="My Image">
   </body>
 </html>
 
@@ -31,7 +31,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chatroom</title>
+    <title>Chatroom with Cooldown</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -65,11 +65,17 @@
             color: white;
             border: none;
         }
+        .message {
+            margin: 5px 0;
+        }
+        .nickname {
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
     <div id="chat">
-        <h2>Chatroom</h2>
+        <h2>Chatroom with Cooldown</h2>
         <div id="messages"></div>
         <div id="input">
             <input id="message" type="text" placeholder="Type a message">
@@ -101,10 +107,33 @@
             const db = getDatabase(app);
             console.log("Firebase initialized");
 
+            // Prompt for nickname
+            let nickname = localStorage.getItem('nickname');
+            if (!nickname) {
+                nickname = prompt("Enter your nickname:");
+                if (!nickname || nickname.trim() === "") {
+                    nickname = "Anonymous";
+                }
+                localStorage.setItem('nickname', nickname);
+            }
+            console.log("Nickname:", nickname);
+
+            // Assign a random color
+            let userColor = localStorage.getItem('userColor');
+            if (!userColor) {
+                userColor = `#${Math.floor(Math.random() * 16777215).toString(16)}`;
+                localStorage.setItem('userColor', userColor);
+            }
+            console.log("User Color:", userColor);
+
             // DOM Elements
             const messagesDiv = document.getElementById('messages');
             const input = document.getElementById('message');
             const sendButton = document.getElementById('sendButton');
+
+            // Cooldown Variables
+            let lastMessageTimestamp = 0; // Store the timestamp of the last sent message
+            const cooldownTime = 5000; // Cooldown time in milliseconds (5 seconds)
 
             // Verify DOM elements are found
             if (!messagesDiv || !input || !sendButton) {
@@ -116,16 +145,26 @@
 
             // Send a message
             function sendMessage() {
+                const now = Date.now();
+                if (now - lastMessageTimestamp < cooldownTime) {
+                    const remainingTime = Math.ceil((cooldownTime - (now - lastMessageTimestamp)) / 1000);
+                    alert(`Please wait ${remainingTime} seconds before sending another message.`);
+                    return;
+                }
+
                 const message = input.value.trim(); // Trim whitespace
                 if (message) {
                     const messagesRef = ref(db, 'messages');
                     push(messagesRef, {
                         message: message,
-                        timestamp: Date.now()
+                        nickname: nickname,
+                        color: userColor,
+                        timestamp: now
                     })
                         .then(() => {
                             console.log("Message sent:", message);
                             input.value = ''; // Clear the input after sending
+                            lastMessageTimestamp = now; // Update the last message timestamp
                         })
                         .catch((error) => {
                             console.error("Error sending message:", error);
@@ -141,8 +180,13 @@
                 const data = snapshot.val();
                 if (data) {
                     const newMessage = document.createElement('p');
-                    newMessage.textContent = data.message;
+                    newMessage.className = "message";
+                    newMessage.innerHTML = `
+                        <span class="nickname" style="color: ${data.color};">${data.nickname}:</span>
+                        <span>${data.message}</span>
+                    `;
                     messagesDiv.appendChild(newMessage);
+                    messagesDiv.scrollTop = messagesDiv.scrollHeight; // Auto-scroll to the latest message
                     console.log("New message added:", data.message);
                 }
             });
@@ -153,6 +197,7 @@
     </script>
 </body>
 </html>
+
 
 
 
