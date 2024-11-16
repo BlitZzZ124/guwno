@@ -31,7 +31,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chatroom with Letter-Based Cooldown</title>
+    <title>Chatroom with Unique UID</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -75,7 +75,7 @@
 </head>
 <body>
     <div id="chat">
-        <h2>Chatroom with Letter-Based Cooldown</h2>
+        <h2>Chatroom with Unique UID</h2>
         <div id="messages"></div>
         <div id="input">
             <input id="message" type="text" placeholder="Type a message (max 500 characters)">
@@ -106,6 +106,14 @@
             const app = initializeApp(firebaseConfig);
             const db = getDatabase(app);
             console.log("Firebase initialized");
+
+            // Generate or Retrieve Unique UID
+            let userUID = localStorage.getItem('userUID');
+            if (!userUID) {
+                userUID = `user-${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
+                localStorage.setItem('userUID', userUID);
+            }
+            console.log("User UID:", userUID);
 
             // Fetch Blacklisted Nicknames
             const blacklistedNicknames = await fetch('blacklisted.txt')
@@ -181,6 +189,7 @@
                     push(messagesRef, {
                         message: message,
                         nickname: nickname,
+                        uid: userUID,
                         color: userColor,
                         timestamp: now
                     })
@@ -216,6 +225,13 @@
 
             // Add event listener to the send button
             sendButton.addEventListener('click', sendMessage);
+
+            // Add event listener for Enter key
+            input.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter') {
+                    sendMessage();
+                }
+            });
         });
     </script>
 </body>
