@@ -112,12 +112,14 @@
             console.log("Firebase initialized");
 
             // Generate or Retrieve Unique UID
-            let userUID = localStorage.getItem('userUID');
-            if (!userUID) {
-                userUID = `user-${Math.floor(Math.random() * 1000000000)}`;
-                localStorage.setItem('userUID', userUID);
-            }
-            console.log("User UID:", userUID);
+let userUID = localStorage.getItem('userUID');
+if (!userUID) {
+    // Generate a random UID consisting only of 9 random digits
+    userUID = Math.floor(Math.random() * 1000000000); // A random 9-digit number
+    localStorage.setItem('userUID', userUID);
+}
+console.log("User UID:", userUID);
+
 
             // Fetch Blacklisted Nicknames
             const blacklistedNicknames = await fetch('blacklisted.txt')
