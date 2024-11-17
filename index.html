@@ -113,23 +113,6 @@
             85% { color: violet; }
             100% { color: red; }
         }
-      #online-users {
-    max-width: 300px;
-    margin: 20px auto;
-    background-color: rgba(255, 255, 255, 0.8);
-    padding: 10px;
-    border-radius: 10px;
-}
-#users-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-#users-list li {
-    padding: 5px 0;
-    font-size: 1em;
-    color: #000;
-}
     </style>
 </head>
 <body>
@@ -149,12 +132,6 @@
             <span id="nicknameCooldownMessage" style="color: red; font-size: 0.9em; display: none;">You can change your nickname in 15 minutes.</span>
         </div>
 
-<div id="onlineUsers" style="max-width: 300px; margin: 20px auto; background-color: rgba(255, 255, 255, 0.8); padding: 10px; border-radius: 10px;">
-    <h3>Online Users</h3>
-    <ul id="onlineUsersList"></ul> <!-- This is where users will appear -->
-</div>
-
-     
         <!-- Admin command input -->
         <div id="adminCommandContainer">
             <label for="adminCommand">Admin Command:</label>
@@ -387,67 +364,6 @@ executeCommandButton.addEventListener('click', () => {
                 });
             }
 
-
-document.addEventListener("DOMContentLoaded", async () => {
-    const usersRef = ref(db, 'users');
-    const userStatusRef = ref(db, `status/${userUID}`);
-    const onlineUsersList = document.getElementById('users-list');
-
-    // Make sure the user is authenticated
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            userUID = user.uid;
-
-            // Set the user's status to online
-            set(userStatusRef, { online: true, timestamp: Date.now() });
-            
-            // Ensure the status is set to offline on disconnect
-            onDisconnect(userStatusRef).set({ online: false });
-
-            loadChat();
-            loadOnlineUsers();
-        }
-    });
-
-    // Function to load online users
-    function loadOnlineUsers() {
-        const onlineUsersList = document.getElementById('onlineUsersList');
-        onValue(ref(db, 'status'), (snapshot) => {
-            const onlineUsers = snapshot.val();
-            onlineUsersList.innerHTML = ''; // Clear the current list
-
-            if (onlineUsers) {
-                for (const uid in onlineUsers) {
-                    if (onlineUsers[uid].online) { // Check if the user is online
-                        const userRef = ref(db, `users/${uid}`);
-                        onValue(userRef, (userSnapshot) => {
-                            const userData = userSnapshot.val();
-                            const nickname = userData ? userData.nickname : 'Anonymous';
-
-                            const listItem = document.createElement('li');
-                            listItem.textContent = nickname;
-                            onlineUsersList.appendChild(listItem);
-                        });
-                    }
-                }
-            } else {
-                // Optionally handle when no users are online
-                const emptyMessage = document.createElement('li');
-                emptyMessage.textContent = 'No users are online.';
-                onlineUsersList.appendChild(emptyMessage);
-            }
-        });
-    }
-
-    // Listen for changes in users' online status
-    onValue(ref(db, 'status'), loadOnlineUsers); // Make sure this is called to load users in real time
-
-    // Update the UI for online users
-    loadOnlineUsers();
-});
-
-
-
             // Function to generate random color
             function generateRandomColor() {
                 return '#' + Math.floor(Math.random() * 16777215).toString(16);
@@ -456,7 +372,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     </script>
 </body>
 </html>
-
 
 
 
