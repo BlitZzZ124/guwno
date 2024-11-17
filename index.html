@@ -28,7 +28,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chatroom nevelose.xyz</title>
+    <title>Chatroom with Admin and Nickname</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
         #chat { max-width: 500px; margin: 50px auto; }
@@ -90,20 +90,15 @@
             const usersRef = ref(db, 'users');
 
             // Admin UID (replace with your actual UID)
-            const adminUIDs = ["6mu1HqthUdT9s0VVIA6OxPpa0WD2"]; 
+            const adminUIDs = ["6mu1HqthUdT9s0VVIA6OxPpa0WD2"];
 
             // DOM Elements for sending messages
             const messagesDiv = document.getElementById('messages');
             const input = document.getElementById('message');
             const sendButton = document.getElementById('sendButton');
-
             const nicknameInput = document.getElementById('nickname');
             const changeNicknameButton = document.getElementById('changeNicknameButton');
             const nicknameCooldownMessage = document.getElementById('nicknameCooldownMessage');
-
-            const authForm = document.getElementById('auth-form');
-            const authButton = document.getElementById('authButton');
-            const authMessage = document.getElementById('authMessage');
 
             let userUID = null;
             let nickname = "Anonymous"; // Default nickname
@@ -111,7 +106,7 @@
             // Change nickname cooldown settings
             const nicknameCooldownPeriod = 900 * 1000; // 900 seconds = 15 minutes
             const lastNicknameChangeTimestamp = localStorage.getItem('lastNicknameChangeTimestamp');
-            
+
             // Handle nickname changes
             function canChangeNickname() {
                 if (lastNicknameChangeTimestamp) {
@@ -126,48 +121,42 @@
                 return true;
             }
 
-            // Function to sign up or log in
-            authButton.addEventListener('click', async () => {
-                const email = document.getElementById('email').value;
-                const password = document.getElementById('password').value;
-
+            // Handle login or signup process
+            async function handleAuth() {
+                const email = prompt('Enter your email:');
+                const password = prompt('Enter your password:');
                 try {
                     const userCredential = await signInWithEmailAndPassword(auth, email, password);
                     userUID = userCredential.user.uid;
                     localStorage.setItem('userUID', userUID); // Store UID locally
-                    authMessage.textContent = 'Successfully logged in!';
-                    authForm.style.display = 'none';
                     loadChat();
                 } catch (error) {
                     try {
                         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                         userUID = userCredential.user.uid;
                         localStorage.setItem('userUID', userUID); // Store UID locally
-                        authMessage.textContent = 'Successfully signed up!';
-                        authForm.style.display = 'none';
                         loadChat();
                     } catch (error) {
-                        authMessage.textContent = 'Error: ' + error.message;
+                        alert('Error: ' + error.message);
                     }
                 }
-            });
+            }
 
-            // When the user is logged in or out
             onAuthStateChanged(auth, (user) => {
                 if (user) {
                     userUID = user.uid;
                     loadChat();
                 } else {
-                    authForm.style.display = 'block'; // Show login form
+                    handleAuth();
                 }
             });
 
-            // Load chat functionality after login/signup
+            // Function to load chat after authentication
             function loadChat() {
-                const nickname = localStorage.getItem('nickname') || 'Anonymous';
+                nickname = localStorage.getItem('nickname') || 'Anonymous';
                 nicknameInput.value = nickname;
 
-                // Handle sending messages
+                // Function to send a message
                 function sendMessage() {
                     const message = input.value.trim();
                     if (message) {
@@ -180,28 +169,26 @@
                             isAdmin: adminUIDs.includes(userUID)
                         };
 
-                        // If the user is an admin, assign rainbow nickname
+                        // If the user is an admin, apply rainbow nickname effect
                         if (messageData.isAdmin) {
                             messageData.nickname = getRainbowNickname();
                         }
 
-                        // Push message to Firebase
                         push(messagesRef, messageData).then(() => {
-                            input.value = ''; // Clear the input field
+                            input.value = ''; // Clear input field
                         }).catch((error) => {
                             console.error("Error sending message:", error);
                         });
                     }
                 }
 
-                // Listen for new messages
+                // Listen for new messages from Firebase
                 onChildAdded(messagesRef, (snapshot) => {
                     const data = snapshot.val();
                     if (data) {
                         const newMessage = document.createElement('p');
                         newMessage.className = "message";
-                        // Display only the first 6 characters of the UID
-                        const shortUID = data.uid.substring(0, 6); // Show first 6 characters of the UID
+                        const shortUID = data.uid.substring(0, 6); // Show first 6 characters of UID
                         newMessage.innerHTML = `
                             <span class="nickname" style="color: ${data.isAdmin ? 'rainbow' : data.color};">${data.nickname}:</span>
                             <span class="uid" style="color: #888;">(${shortUID})</span>
@@ -212,17 +199,17 @@
                     }
                 });
 
-                // Add event listener to send message button
+                // Send message on button click
                 sendButton.addEventListener('click', sendMessage);
 
-                // Allow pressing Enter to send messages
+                // Allow message sending with Enter key
                 input.addEventListener('keydown', (event) => {
                     if (event.key === 'Enter') {
                         sendMessage();
                     }
                 });
 
-                // Handle nickname change
+                // Nickname change functionality
                 changeNicknameButton.addEventListener('click', () => {
                     if (!canChangeNickname()) return;
                     const newNickname = nicknameInput.value.trim();
@@ -237,7 +224,7 @@
                 });
             }
 
-            // Function for rainbow nickname effect for admins
+            // Function to apply rainbow effect to admin nicknames
             function getRainbowNickname() {
                 const colors = ['#FF0000', '#FF7F00', '#FFFF00', '#00FF00', '#0000FF', '#4B0082', '#8B00FF'];
                 let i = 0;
@@ -252,7 +239,6 @@
     </script>
 </body>
 </html>
-
 
 
 
