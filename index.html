@@ -29,83 +29,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chatroom with Admin and Nickname</title>
     <style>
-          /* Set background image to Windows XP Bliss */
+        /* Set background image for the whole page */
         body {
-            background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Windows_XP_Bliss.jpg/1024px-Windows_XP_Bliss.jpg');
-            background-size: cover;  /* Ensures the image covers the entire page */
-            background-position: center;
-            background-repeat: no-repeat;
-            margin: 0;
-            padding: 0;
-            font-family: "Tahoma", sans-serif;
-            color: #000;
-        }
-
-        /* Content container to hold the main content above the taskbar */
-        #content {
-            min-height: calc(100vh - 40px); /* Ensure space for the taskbar */
-            padding: 20px;
-            background-color: rgba(255, 255, 255, 0.7); /* Light transparent background for readability */
-            border-radius: 10px;
-            margin: 20px;
-        }
-
-        /* Style for the taskbar */
-        #taskbar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 40px;
-            background-color: #1a1a1a;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: flex-start;
-            padding: 5px;
-            border-top: 2px solid #000;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-        }
-
-        /* Taskbar Start Button */
-        #start-button {
-            background-color: #0078d7;
-            color: white;
-            border: none;
-            padding: 8px 12px;
-            font-weight: bold;
-            border-radius: 3px;
-            margin-right: 15px;
-            cursor: pointer;
-        }
-
-        #start-button:hover {
-            background-color: #005c99;
-        }
-
-        /* Style for Taskbar Icons (hyperlinks) */
-        .taskbar-icon {
-            margin-left: 10px;
-            padding: 5px;
-            color: white;
-            text-decoration: none;
-            background-color: #333;
-            border-radius: 5px;
-            font-size: 14px;
-        }
-
-        .taskbar-icon:hover {
-            background-color: #444;
-        }
-
-        /* Optional: Make hyperlinks in content stand out */
-        a {
-            color: #1a73e8;
-            text-decoration: none;
-        }
-
-        a:hover {
-            text-decoration: underline;
+            background-image: url('windows.jpg'); /* Path to your .jpg image */
+            background-size: cover;  /* Makes the image cover the whole page */
+            background-position: center; /* Centers the background image */
+            background-repeat: no-repeat; /* Ensures the image doesn't repeat */
+            margin: 0; /* Removes default margin */
+            padding: 0; /* Removes default padding */
+            font-family: Arial, sans-serif;
         }
 
         #chat {
@@ -179,26 +111,6 @@
     </style>
 </head>
 <body>
-   <!-- Main content area -->
-    <div id="content">
-        <h1>Welcome to the Windows XP Styled Website</h1>
-        <p>This is a simple page styled to resemble Windows XP. You can add your content here, and below will be the taskbar.</p>
-        <p><a href="#">Click here for more info</a></p>
-    </div>
-
-    <!-- Taskbar at the bottom -->
-    <div id="taskbar">
-        <!-- Start Button -->
-        <button id="start-button">Start</button>
-        
-        <!-- Taskbar icons (hyperlinks) -->
-        <a href="#" class="taskbar-icon">Internet Explorer</a>
-        <a href="#" class="taskbar-icon">My Computer</a>
-        <a href="#" class="taskbar-icon">Recycle Bin</a>
-        <a href="#" class="taskbar-icon">Documents</a>
-    </div> 
-  </body>
-  </html>
     <div id="chat">
         <h2>Chatroom</h2>
         <div id="messages"></div>
@@ -410,7 +322,6 @@
     </script>
 </body>
 </html>
-
 
 
 
