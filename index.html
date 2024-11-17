@@ -241,27 +241,29 @@
                 });
 
                 // Listen for new messages
-                onChildAdded(messagesRef, (data) => {
-                    const messageData = data.val();
-                    const messageElement = document.createElement('div');
-                    messageElement.classList.add('message');
+onChildAdded(messagesRef, (data) => {
+    const messageData = data.val();
+    const messageElement = document.createElement('div');
+    messageElement.classList.add('message');
 
-                    // Add rainbow effect to nickname
-                    const nicknameSpan = document.createElement('span');
-                    nicknameSpan.classList.add('nickname');
-                    if (adminUIDs.includes(messageData.uid)) {
-                        nicknameSpan.classList.add('rainbow'); // Add rainbow effect for admins
-                    }
-                    nicknameSpan.style.color = messageData.color;
-                    nicknameSpan.innerText = messageData.nickname;
+    // Add rainbow effect to nickname
+    const nicknameSpan = document.createElement('span');
+    nicknameSpan.classList.add('nickname');
+    if (adminUIDs.includes(messageData.uid)) {
+        nicknameSpan.classList.add('rainbow'); // Add rainbow effect for admins
+    }
+    nicknameSpan.style.color = messageData.color;
+    nicknameSpan.innerText = messageData.nickname;
 
-                    messageElement.appendChild(nicknameSpan);
-                    messageElement.innerHTML += ": " + messageData.text;
-                    messagesDiv.appendChild(messageElement);
+    messageElement.appendChild(nicknameSpan);
+    messageElement.innerHTML += ": " + messageData.text;
+    messagesDiv.appendChild(messageElement);
 
-                    // Play sound when a new message is received
-                    messageSound.play();
-                });
+    // Play sound only if the message is from someone else
+    if (messageData.uid !== userUID) {
+        messageSound.play();
+    }
+});
 
                 // Setup input and send button
                 sendButton.addEventListener('click', sendMessage);
