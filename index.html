@@ -26,7 +26,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chatroom with Admin and Nickname</title>
+    <title>Chatroom with Admin Commands</title>
     <style>
         /* Set background image for the whole page */
         body {
@@ -131,6 +131,14 @@
             <button id="changeNicknameButton">Change Nickname</button>
             <span id="nicknameCooldownMessage" style="color: red; font-size: 0.9em; display: none;">You can change your nickname in 15 minutes.</span>
         </div>
+
+        <!-- Admin command input -->
+        <div id="adminCommandContainer">
+            <label for="adminCommand">Admin Command:</label>
+            <input id="adminCommand" type="text" placeholder="Enter command (e.g., /setcolor userUID #ff5733)">
+            <button id="executeCommandButton">Execute Command</button>
+            <span id="commandMessage" style="color: red; font-size: 0.9em; display: none;">Invalid command!</span>
+        </div>
     </div>
 
     <!-- Audio element to play sound -->
@@ -177,27 +185,13 @@
             const nicknameCooldownMessage = document.getElementById('nicknameCooldownMessage');
             const messageSound = document.getElementById('messageSound');
 
+            const adminCommandInput = document.getElementById('adminCommand');
+            const executeCommandButton = document.getElementById('executeCommandButton');
+            const commandMessage = document.getElementById('commandMessage');
+
             let userUID = null;
             let nickname = "Anonymous"; // Default nickname
             let color = "#000000"; // Default color (black)
-
-            // Change nickname cooldown settings
-            const nicknameCooldownPeriod = 900 * 1000; // 900 seconds = 15 minutes
-            const lastNicknameChangeTimestamp = localStorage.getItem('lastNicknameChangeTimestamp');
-
-            // Handle nickname changes
-            function canChangeNickname() {
-                if (lastNicknameChangeTimestamp) {
-                    const timeElapsed = Date.now() - lastNicknameChangeTimestamp;
-                    if (timeElapsed < nicknameCooldownPeriod) {
-                        const remainingTime = Math.ceil((nicknameCooldownPeriod - timeElapsed) / 1000);
-                        nicknameCooldownMessage.textContent = `You can change your nickname in ${remainingTime} seconds.`;
-                        nicknameCooldownMessage.style.display = 'inline';
-                        return false;
-                    }
-                }
-                return true;
-            }
 
             // Handle login or signup process
             async function handleAuth() {
@@ -240,41 +234,17 @@
                     const data = snapshot.val();
                     if (data) {
                         nickname = data.nickname;
-                        color = data.color; // Retrieve stored color
+                        color = data.color; // Retrieve color from Firebase
                         nicknameInput.value = nickname;
                     } else {
-                        // If user doesn't have nickname and color, generate them
                         nickname = "Anonymous";
                         color = generateRandomColor(); // Generate random color if not set
-                        set(ref(db, 'users/' + userUID), { nickname, color });
+                        set(userRef, { nickname, color });
                     }
                 });
 
-                // Function to generate random color
-                function generateRandomColor() {
-                    return '#' + Math.floor(Math.random() * 16777215).toString(16);
-                }
-
-                // Function to send a message
-                function sendMessage() {
-                    const message = input.value.trim();
-                    if (message && userUID) {
-                        const messageData = {
-                            message: message,
-                            nickname: nickname,
-                            uid: userUID,
-                            color: color, // Use fixed color for the user
-                            timestamp: Date.now(),
-                            isAdmin: adminUIDs.includes(userUID)
-                        };
-
-                        push(messagesRef, messageData).then(() => {
-                            input.value = ''; // Clear input field
-                        }).catch((error) => {
-                            console.error("Error sending message:", error);
-                        });
-                    }
-                }
+                // Handle sending regular messages
+                sendButton.addEventListener('click', sendMessage);
 
                 // Listen for new messages from Firebase
                 onChildAdded(messagesRef, (snapshot) => {
@@ -306,9 +276,6 @@
                     }
                 });
 
-                // Add event listener for sending messages
-                sendButton.addEventListener('click', sendMessage);
-
                 // Allow sending messages with Enter key
                 input.addEventListener('keydown', (event) => {
                     if (event.key === 'Enter') {
@@ -316,22 +283,56 @@
                     }
                 });
 
-                // Handle nickname change button click
-                changeNicknameButton.addEventListener('click', () => {
-                    if (canChangeNickname()) {
-                        const newNickname = nicknameInput.value.trim();
-                        if (newNickname && newNickname !== nickname) {
-                            nickname = newNickname;
-                            localStorage.setItem('nickname', nickname);
-                            localStorage.setItem('lastNicknameChangeTimestamp', Date.now());
-                            set(ref(db, 'users/' + userUID), { nickname, color }); // Update nickname in Firebase
-                            alert("Nickname updated to: " + nickname);
-                            nicknameCooldownMessage.style.display = 'none'; // Hide cooldown message
+                // Function to send a message
+                function sendMessage() {
+                    const message = input.value.trim();
+                    if (message && userUID) {
+                        const messageData = {
+                            message: message,
+                            nickname: nickname,
+                            uid: userUID,
+                            color: color,
+                            timestamp: Date.now(),
+                            isAdmin: adminUIDs.includes(userUID)
+                        };
+
+                        push(messagesRef, messageData).then(() => {
+                            input.value = ''; // Clear input field
+                        }).catch((error) => {
+                            console.error("Error sending message:", error);
+                        });
+                    }
+                }
+
+                // Admin command to change color
+                executeCommandButton.addEventListener('click', () => {
+                    const command = adminCommandInput.value.trim();
+                    if (command.startsWith('/setcolor')) {
+                        const parts = command.split(' '); // Split command by space
+                        if (parts.length === 3) {
+                            const targetUID = parts[1]; // User UID
+                            const colorCode = parts[2]; // Color code (hex)
+                            if (/^#[0-9A-F]{6}$/i.test(colorCode)) { // Validate hex color code
+                                set(ref(db, 'users/' + targetUID), {
+                                    color: colorCode
+                                }).then(() => {
+                                    alert(`Color of ${targetUID} changed to ${colorCode}`);
+                                }).catch((error) => {
+                                    console.error("Error changing color:", error);
+                                });
+                            } else {
+                                alert('Invalid hex color code!');
+                            }
                         } else {
-                            alert("Please enter a valid nickname.");
+                            commandMessage.style.display = 'inline';
                         }
                     }
                 });
+            }
+
+            // Function to generate random color
+            function generateRandomColor() {
+                return '#' + Math.floor(Math.random() * 16777215).toString(16);
             }
         });
     </script>
