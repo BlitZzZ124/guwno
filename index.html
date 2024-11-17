@@ -28,7 +28,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chatroom with Nickname</title>
+    <title>Chatroom with Admin and Nickname</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
         #chat { max-width: 500px; margin: 50px auto; }
@@ -40,6 +40,7 @@
         .nickname { font-weight: bold; }
         .uid { font-size: 0.8em; color: #888; }
         #nickname-container { margin-bottom: 10px; }
+        #auth-container { text-align: center; margin-top: 20px; }
     </style>
 </head>
 <body>
@@ -58,11 +59,23 @@
             <button id="changeNicknameButton">Change Nickname</button>
             <span id="nicknameCooldownMessage" style="color: red; font-size: 0.9em; display: none;">You can change your nickname in 15 minutes.</span>
         </div>
+
+        <!-- Authentication (Sign Up and Log In) -->
+        <div id="auth-container">
+            <div id="auth-form">
+                <h3>Sign Up or Log In</h3>
+                <input type="email" id="email" placeholder="Email" required>
+                <input type="password" id="password" placeholder="Password" required>
+                <button id="authButton">Sign Up / Log In</button>
+                <p id="authMessage" style="color: red;"></p>
+            </div>
+        </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-app.js";
-        import { getDatabase, ref, push, onChildAdded, remove, onValue } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-database.js";
+        import { getDatabase, ref, push, onChildAdded, onValue } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-database.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-auth.js";
 
         // Firebase configuration
         const firebaseConfig = {
@@ -76,44 +89,42 @@
             measurementId: "G-PHPR2T1DNJ"
         };
 
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const auth = getAuth(app);
+
         document.addEventListener("DOMContentLoaded", async () => {
             console.log("DOM fully loaded and parsed");
 
-            // Initialize Firebase
-            const app = initializeApp(firebaseConfig);
-            const db = getDatabase(app);
-            console.log("Firebase initialized");
+            // References to Firebase nodes
+            const messagesRef = ref(db, 'messages');
+            const usersRef = ref(db, 'users');
 
-            const messagesRef = ref(db, 'messages'); // Reference to the messages node
+            // Admin UID (replace with your actual UID)
+            const adminUIDs = ["your-firebase-admin-uid"]; 
 
-            // Retrieve or set a random UID for the user
-            let userUID = localStorage.getItem('userUID');
-            if (!userUID) {
-                userUID = Math.floor(Math.random() * 1000000000); // A random 9-digit number
-                localStorage.setItem('userUID', userUID);
-            }
-            console.log("User UID:", userUID);
+            // DOM Elements for sending messages
+            const messagesDiv = document.getElementById('messages');
+            const input = document.getElementById('message');
+            const sendButton = document.getElementById('sendButton');
 
-            // Get the last nickname from localStorage or set a default value if none is found
-            let nickname = localStorage.getItem('nickname');
-            if (!nickname) {
-                nickname = "Anonymous"; // Default name if no nickname is stored
-                localStorage.setItem('nickname', nickname); // Store the default nickname
-            }
-            console.log("Nickname:", nickname);
-
-            // Set the nickname in the input field (initially filled with stored nickname)
             const nicknameInput = document.getElementById('nickname');
-            nicknameInput.value = nickname;
-
-            // Change nickname functionality with cooldown
             const changeNicknameButton = document.getElementById('changeNicknameButton');
             const nicknameCooldownMessage = document.getElementById('nicknameCooldownMessage');
 
-            const nicknameCooldownPeriod = 900 * 1000; // 900 seconds = 15 minutes in milliseconds
-            const lastNicknameChangeTimestamp = localStorage.getItem('lastNicknameChangeTimestamp');
+            const authForm = document.getElementById('auth-form');
+            const authButton = document.getElementById('authButton');
+            const authMessage = document.getElementById('authMessage');
 
-            // Check if nickname change is within cooldown period
+            let userUID = null;
+            let nickname = "Anonymous"; // Default nickname
+
+            // Change nickname cooldown settings
+            const nicknameCooldownPeriod = 900 * 1000; // 900 seconds = 15 minutes
+            const lastNicknameChangeTimestamp = localStorage.getItem('lastNicknameChangeTimestamp');
+            
+            // Handle nickname changes
             function canChangeNickname() {
                 if (lastNicknameChangeTimestamp) {
                     const timeElapsed = Date.now() - lastNicknameChangeTimestamp;
@@ -127,120 +138,116 @@
                 return true;
             }
 
-            changeNicknameButton.addEventListener('click', () => {
-                if (!canChangeNickname()) {
-                    return;
-                }
+            // Function to sign up or log in
+            authButton.addEventListener('click', async () => {
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
 
-                const newNickname = nicknameInput.value.trim();
-                if (newNickname && newNickname !== nickname) {
-                    nickname = newNickname;
-                    localStorage.setItem('nickname', nickname); // Save new nickname to localStorage
-                    localStorage.setItem('lastNicknameChangeTimestamp', Date.now()); // Update last nickname change timestamp
-                    alert("Nickname updated to: " + nickname);
-                    nicknameCooldownMessage.style.display = 'none'; // Hide cooldown message
-                } else {
-                    alert("Please enter a valid nickname.");
+                try {
+                    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                    userUID = userCredential.user.uid;
+                    localStorage.setItem('userUID', userUID); // Store UID locally
+                    authMessage.textContent = 'Successfully logged in!';
+                    authForm.style.display = 'none';
+                    loadChat();
+                } catch (error) {
+                    try {
+                        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                        userUID = userCredential.user.uid;
+                        localStorage.setItem('userUID', userUID); // Store UID locally
+                        authMessage.textContent = 'Successfully signed up!';
+                        authForm.style.display = 'none';
+                        loadChat();
+                    } catch (error) {
+                        authMessage.textContent = 'Error: ' + error.message;
+                    }
                 }
             });
 
-            // Get a random color for the user (stored in localStorage)
-            let userColor = localStorage.getItem('userColor');
-            if (!userColor) {
-                userColor = `#${Math.floor(Math.random() * 16777215).toString(16)}`;
-                localStorage.setItem('userColor', userColor);
-            }
-            console.log("User Color:", userColor);
-
-            // DOM Elements for sending messages
-            const messagesDiv = document.getElementById('messages');
-            const input = document.getElementById('message');
-            const sendButton = document.getElementById('sendButton');
-
-            // Cooldown Variables
-            let lastMessageTimestamp = 0;
-            const cooldownPerLetter = 500; // Cooldown per letter in milliseconds
-            const maxMessageLength = 500; // Maximum characters allowed in a message
-
-            // Send a message function
-            function sendMessage() {
-                const message = input.value.trim();
-
-                if (message.length > maxMessageLength) {
-                    alert(`Messages cannot exceed ${maxMessageLength} characters.`);
-                    return;
+            // When the user is logged in or out
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    userUID = user.uid;
+                    loadChat();
+                } else {
+                    authForm.style.display = 'block'; // Show login form
                 }
+            });
 
-                // Cooldown based on message length
-                const now = Date.now();
-                const messageCooldown = message.length * cooldownPerLetter;
-                if (now - lastMessageTimestamp < messageCooldown) {
-                    const remainingTime = Math.ceil((messageCooldown - (now - lastMessageTimestamp)) / 1000);
-                    alert(`Please wait ${remainingTime} seconds before sending another message.`);
-                    return;
-                }
+            // Load chat functionality after login/signup
+            function loadChat() {
+                const nickname = localStorage.getItem('nickname') || 'Anonymous';
+                nicknameInput.value = nickname;
 
-                if (message) {
-                    push(messagesRef, {
-                        message: message,
-                        nickname: nickname,
-                        uid: userUID,
-                        color: userColor,
-                        timestamp: now
-                    })
-                        .then(() => {
-                            input.value = ''; // Clear the input after sending
-                            lastMessageTimestamp = now; // Update the last message timestamp
-                        })
-                        .catch((error) => {
-                            console.error("Error sending message:", error);
+                // Handle sending messages
+                function sendMessage() {
+                    const message = input.value.trim();
+                    if (message) {
+                        onValue(ref(db, 'users/' + userUID), (snapshot) => {
+                            const userData = snapshot.val();
+                            if (userData && userData.muted) {
+                                alert("You are muted and cannot send messages.");
+                                return;
+                            } else {
+                                const messageData = {
+                                    message: message,
+                                    nickname: nickname,
+                                    uid: userUID,
+                                    color: userData ? userData.color : "#000000",
+                                    timestamp: Date.now(),
+                                    isAdmin: adminUIDs.includes(userUID)
+                                };
+                                push(messagesRef, messageData);
+                            }
                         });
-                } else {
-                    alert("Please enter a message.");
+                    }
                 }
-            }
 
-            // Listen for new messages from Firebase Realtime Database
-            onChildAdded(messagesRef, (snapshot) => {
-                const data = snapshot.val();
-                if (data) {
-                    const newMessage = document.createElement('p');
-                    newMessage.className = "message";
-                    newMessage.innerHTML = `
-                        <span class="nickname" style="color: ${data.color};">${data.nickname}:</span>
-                        <span class="uid" style="color: #888;">(${data.uid})</span>
-                        <span>: ${data.message}</span>
-                    `;
-                    messagesDiv.appendChild(newMessage);
-                    messagesDiv.scrollTop = messagesDiv.scrollHeight;
-                }
-            });
-
-            // Add event listener to the send button
-            sendButton.addEventListener('click', sendMessage);
-
-            // Allow sending messages with the Enter key
-            input.addEventListener('keydown', (event) => {
-                if (event.key === 'Enter') {
-                    sendMessage();
-                }
-            });
-
-            // Clear old messages every 15 minutes
-            setInterval(() => {
-                const fifteenMinutesAgo = Date.now() - 15 * 60 * 1000;
-                onValue(messagesRef, (snapshot) => {
-                    snapshot.forEach((child) => {
-                        if (child.val().timestamp < fifteenMinutesAgo) {
-                            remove(ref(db, `messages/${child.key}`));
-                        }
-                    });
+                // Listen for new messages
+                onChildAdded(messagesRef, (snapshot) => {
+                    const data = snapshot.val();
+                    if (data) {
+                        const newMessage = document.createElement('p');
+                        newMessage.className = "message";
+                        newMessage.innerHTML = `
+                            <span class="nickname" style="color: ${data.isAdmin ? 'rainbow' : data.color};">${data.nickname}:</span>
+                            <span class="uid" style="color: #888;">(${data.uid})</span>
+                            <span>: ${data.message}</span>
+                        `;
+                        messagesDiv.appendChild(newMessage);
+                        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                    }
                 });
-            }, 15 * 60 * 1000); // 15 minutes
+
+                sendButton.addEventListener('click', sendMessage);
+
+                // Send message on Enter key press
+                input.addEventListener('keydown', (event) => {
+                    if (event.key === 'Enter') {
+                        sendMessage();
+                    }
+                });
+
+                // Handle nickname change
+                changeNicknameButton.addEventListener('click', () => {
+                    if (!canChangeNickname()) return;
+
+                    const newNickname = nicknameInput.value.trim();
+                    if (newNickname) {
+                        localStorage.setItem('nickname', newNickname);
+                        nickname = newNickname;
+                        alert("Nickname updated to: " + newNickname);
+                        localStorage.setItem('lastNicknameChangeTimestamp', Date.now()); // Update timestamp
+                    } else {
+                        alert("Please enter a valid nickname.");
+                    }
+                });
+            }
         });
     </script>
 </body>
 </html>
+
 
 
 
