@@ -149,10 +149,11 @@
             <span id="nicknameCooldownMessage" style="color: red; font-size: 0.9em; display: none;">You can change your nickname in 15 minutes.</span>
         </div>
 
-<div id="online-users">
+<div id="onlineUsers" style="max-width: 300px; margin: 20px auto; background-color: rgba(255, 255, 255, 0.8); padding: 10px; border-radius: 10px;">
     <h3>Online Users</h3>
-    <ul id="users-list"></ul>
+    <ul id="onlineUsersList"></ul> <!-- This is where users will appear -->
 </div>
+
      
         <!-- Admin command input -->
         <div id="adminCommandContainer">
@@ -406,21 +407,34 @@ executeCommandButton.addEventListener('click', () => {
     });
 
     // Function to load online users list
-    function loadOnlineUsers() {
-        onValue(usersRef, (snapshot) => {
-            const users = snapshot.val();
-            onlineUsersList.innerHTML = ''; // Clear the list
+function loadOnlineUsers() {
+    const onlineUsersList = document.getElementById('onlineUsersList');
+    onValue(ref(db, 'status'), (snapshot) => {
+        const onlineUsers = snapshot.val();
+        onlineUsersList.innerHTML = ''; // Clear the current list
 
-            for (const uid in users) {
-                const user = users[uid];
-                if (user.status && user.status.online) {
-                    const listItem = document.createElement('li');
-                    listItem.textContent = user.nickname || 'Anonymous';
-                    onlineUsersList.appendChild(listItem);
+        if (onlineUsers) {
+            for (const uid in onlineUsers) {
+                if (onlineUsers[uid].online) { // Check if the user is online
+                    const userRef = ref(db, `users/${uid}`);
+                    onValue(userRef, (userSnapshot) => {
+                        const userData = userSnapshot.val();
+                        const nickname = userData ? userData.nickname : 'Anonymous';
+
+                        const listItem = document.createElement('li');
+                        listItem.textContent = nickname;
+                        onlineUsersList.appendChild(listItem);
+                    });
                 }
             }
-        });
-    }
+        } else {
+            // Optionally handle when no users are online
+            const emptyMessage = document.createElement('li');
+            emptyMessage.textContent = 'No users are online.';
+            onlineUsersList.appendChild(emptyMessage);
+        }
+    });
+}
 
     // Listen for changes in users' online status
     onValue(ref(db, 'status'), loadOnlineUsers);
