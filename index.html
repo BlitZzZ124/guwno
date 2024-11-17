@@ -40,6 +40,13 @@
         .nickname { font-weight: bold; }
         .uid { font-size: 0.8em; color: #888; }
         #nickname-container { margin-bottom: 10px; }
+        
+        /* Style for the rainbow effect on the admin's nickname */
+        .rainbow {
+            background-image: linear-gradient(to left, red, orange, yellow, green, cyan, blue, violet);
+            -webkit-background-clip: text;
+            color: transparent;
+        }
     </style>
 </head>
 <body>
@@ -90,7 +97,7 @@
             const usersRef = ref(db, 'users');
 
             // Admin UID (replace with your actual UID)
-            const adminUIDs = ["6mu1HqthUdT9s0VVIA6OxPpa0WD2"];
+            const adminUIDs = ["your-firebase-admin-uid"];
 
             // DOM Elements for sending messages
             const messagesDiv = document.getElementById('messages');
@@ -156,6 +163,11 @@
                 nickname = localStorage.getItem('nickname') || 'Anonymous';
                 nicknameInput.value = nickname;
 
+                // Generate a random color for non-admin users
+                function generateRandomColor() {
+                    return '#' + Math.floor(Math.random() * 16777215).toString(16);
+                }
+
                 // Function to send a message
                 function sendMessage() {
                     const message = input.value.trim();
@@ -164,14 +176,14 @@
                             message: message,
                             nickname: nickname,
                             uid: userUID,
-                            color: "#000000", // Default color, can be changed
+                            color: generateRandomColor(), // Assign random color to nickname
                             timestamp: Date.now(),
                             isAdmin: adminUIDs.includes(userUID)
                         };
 
                         // If the user is an admin, apply rainbow nickname effect
                         if (messageData.isAdmin) {
-                            messageData.nickname = getRainbowNickname();
+                            messageData.nickname = "rainbow"; // Admin gets rainbow nickname effect
                         }
 
                         push(messagesRef, messageData).then(() => {
@@ -189,8 +201,12 @@
                         const newMessage = document.createElement('p');
                         newMessage.className = "message";
                         const shortUID = data.uid.substring(0, 6); // Show first 6 characters of UID
+
+                        // Apply rainbow effect for admin, else apply user's specific color
+                        let nicknameStyle = data.isAdmin ? 'rainbow' : `color: ${data.color}`;
+
                         newMessage.innerHTML = `
-                            <span class="nickname" style="color: ${data.isAdmin ? 'rainbow' : data.color};">${data.nickname}:</span>
+                            <span class="nickname" style="${data.isAdmin ? 'background-image: linear-gradient(to left, red, orange, yellow, green, cyan, blue, violet); -webkit-background-clip: text; color: transparent;' : 'color: ' + data.color};">${data.nickname}:</span>
                             <span class="uid" style="color: #888;">(${shortUID})</span>
                             <span>: ${data.message}</span>
                         `;
@@ -199,41 +215,31 @@
                     }
                 });
 
-                // Send message on button click
+                // Add event listener for sending messages
                 sendButton.addEventListener('click', sendMessage);
 
-                // Allow message sending with Enter key
+                // Allow sending messages with Enter key
                 input.addEventListener('keydown', (event) => {
                     if (event.key === 'Enter') {
                         sendMessage();
                     }
                 });
 
-                // Nickname change functionality
+                // Handle nickname change button click
                 changeNicknameButton.addEventListener('click', () => {
-                    if (!canChangeNickname()) return;
-                    const newNickname = nicknameInput.value.trim();
-                    if (newNickname) {
-                        localStorage.setItem('nickname', newNickname);
-                        nickname = newNickname;
-                        alert("Nickname updated to: " + newNickname);
-                        localStorage.setItem('lastNicknameChangeTimestamp', Date.now()); // Update timestamp
-                    } else {
-                        alert("Please enter a valid nickname.");
+                    if (canChangeNickname()) {
+                        const newNickname = nicknameInput.value.trim();
+                        if (newNickname && newNickname !== nickname) {
+                            nickname = newNickname;
+                            localStorage.setItem('nickname', nickname);
+                            localStorage.setItem('lastNicknameChangeTimestamp', Date.now());
+                            alert("Nickname updated to: " + nickname);
+                            nicknameCooldownMessage.style.display = 'none'; // Hide cooldown message
+                        } else {
+                            alert("Please enter a valid nickname.");
+                        }
                     }
                 });
-            }
-
-            // Function to apply rainbow effect to admin nicknames
-            function getRainbowNickname() {
-                const colors = ['#FF0000', '#FF7F00', '#FFFF00', '#00FF00', '#0000FF', '#4B0082', '#8B00FF'];
-                let i = 0;
-                setInterval(() => {
-                    if (i === colors.length) i = 0;
-                    nicknameInput.style.color = colors[i];
-                    i++;
-                }, 100);
-                return nickname;
             }
         });
     </script>
