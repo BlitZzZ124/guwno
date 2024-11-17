@@ -22,7 +22,6 @@
 <a href="https://steamcommunity.com/id/nxxxlf/">Steam</a>
 
 
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -242,60 +241,87 @@
                     }
                 });
 
-                // Display messages in the chat
-                onChildAdded(messagesRef, (data) => {
-                    const messageData = data.val();
-                    const messageDiv = document.createElement("div");
-                    messageDiv.classList.add('message');
-                    messageDiv.style.color = messageData.color || '#000';
-
-                    const nicknameSpan = document.createElement("span");
-                    nicknameSpan.classList.add('nickname');
-                    nicknameSpan.textContent = messageData.nickname || "Anonymous";
-                    messageDiv.appendChild(nicknameSpan);
-
-                    const uidSpan = document.createElement("span");
-                    uidSpan.classList.add('uid');
-                    uidSpan.textContent = messageData.uid;
-                    messageDiv.appendChild(uidSpan);
-
-                    messageDiv.appendChild(document.createTextNode(": " + messageData.text));
-
-                    messagesDiv.appendChild(messageDiv);
-                    messagesDiv.scrollTop = messagesDiv.scrollHeight;
-                });
-            }
-
-            // Handle sending messages
-            sendButton.addEventListener('click', () => {
-                const messageText = input.value.trim();
-                if (messageText.length > 0) {
-                    push(messagesRef, {
-                        uid: userUID,
-                        nickname: nickname,
-                        text: messageText,
-                        color: color
-                    });
-                    input.value = '';
+                // Function to generate random color
+                function generateRandomColor() {
+                    return '#' + Math.floor(Math.random() * 16777215).toString(16);
                 }
-            });
 
-            // Handle nickname changes
-            changeNicknameButton.addEventListener('click', () => {
-                if (canChangeNickname()) {
-                    nickname = nicknameInput.value.trim();
-                    if (nickname.length > 0) {
-                        set(ref(db, 'users/' + userUID), { nickname, color });
-                        localStorage.setItem('nickname', nickname);
-                        localStorage.setItem('lastNicknameChangeTimestamp', Date.now().toString());
+                // Function to send a message
+                function sendMessage() {
+                    const message = input.value.trim();
+                    if (message && userUID) {
+                        const messageData = {
+                            message: message,
+                            nickname: nickname,
+                            uid: userUID,
+                            color: color, // Use fixed color for the user
+                            timestamp: Date.now(),
+                            isAdmin: adminUIDs.includes(userUID)
+                        };
+
+                        // Admin gets rainbow nickname effect (style only)
+                        const nicknameStyle = messageData.isAdmin ? 'rainbow' : ''; // Admin gets rainbow effect, but keeps their actual nickname
+
+                        push(messagesRef, messageData).then(() => {
+                            input.value = ''; // Clear input field
+                        }).catch((error) => {
+                            console.error("Error sending message:", error);
+                        });
                     }
                 }
-            });
+
+                // Listen for new messages from Firebase
+                onChildAdded(messagesRef, (snapshot) => {
+                    const data = snapshot.val();
+                    if (data) {
+                        const newMessage = document.createElement('p');
+                        newMessage.className = "message";
+                        const shortUID = data.uid.substring(0, 6); // Show first 6 characters of UID
+
+                        // Apply rainbow effect for admin (style only), else use fixed color for the user
+                        let nicknameStyle = data.isAdmin ? 'rainbow' : `color: ${data.color}`;
+
+                        newMessage.innerHTML = `
+                            <span class="nickname ${nicknameStyle}">${data.nickname}:</span>
+                            <span class="uid" style="color: #888;">(${shortUID})</span>
+                            <span>: ${data.message}</span>
+                        `;
+                        messagesDiv.appendChild(newMessage);
+                        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                    }
+                });
+
+                // Add event listener for sending messages
+                sendButton.addEventListener('click', sendMessage);
+
+                // Allow sending messages with Enter key
+                input.addEventListener('keydown', (event) => {
+                    if (event.key === 'Enter') {
+                        sendMessage();
+                    }
+                });
+
+                // Handle nickname change button click
+                changeNicknameButton.addEventListener('click', () => {
+                    if (canChangeNickname()) {
+                        const newNickname = nicknameInput.value.trim();
+                        if (newNickname && newNickname !== nickname) {
+                            nickname = newNickname;
+                            localStorage.setItem('nickname', nickname);
+                            localStorage.setItem('lastNicknameChangeTimestamp', Date.now());
+                            set(ref(db, 'users/' + userUID), { nickname, color }); // Update nickname in Firebase
+                            alert("Nickname updated to: " + nickname);
+                            nicknameCooldownMessage.style.display = 'none'; // Hide cooldown message
+                        } else {
+                            alert("Please enter a valid nickname.");
+                        }
+                    }
+                });
+            }
         });
     </script>
 </body>
 </html>
-
 
 
 
