@@ -28,7 +28,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chatroom nevelose.xyz</title>
+    <title>Chatroom with Admin and Nickname</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
         #chat { max-width: 500px; margin: 50px auto; }
@@ -74,7 +74,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-app.js";
-        import { getDatabase, ref, push, onChildAdded, onValue } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-database.js";
+        import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-database.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-auth.js";
 
         // Firebase configuration
@@ -183,22 +183,20 @@
                 function sendMessage() {
                     const message = input.value.trim();
                     if (message) {
-                        onValue(ref(db, 'users/' + userUID), (snapshot) => {
-                            const userData = snapshot.val();
-                            if (userData && userData.muted) {
-                                alert("You are muted and cannot send messages.");
-                                return;
-                            } else {
-                                const messageData = {
-                                    message: message,
-                                    nickname: nickname,
-                                    uid: userUID,
-                                    color: userData ? userData.color : "#000000",
-                                    timestamp: Date.now(),
-                                    isAdmin: adminUIDs.includes(userUID)
-                                };
-                                push(messagesRef, messageData);
-                            }
+                        const messageData = {
+                            message: message,
+                            nickname: nickname,
+                            uid: userUID,
+                            color: "#000000", // Default color, can be changed
+                            timestamp: Date.now(),
+                            isAdmin: adminUIDs.includes(userUID)
+                        };
+
+                        // Push message to Firebase
+                        push(messagesRef, messageData).then(() => {
+                            input.value = ''; // Clear the input field
+                        }).catch((error) => {
+                            console.error("Error sending message:", error);
                         });
                     }
                 }
@@ -209,9 +207,11 @@
                     if (data) {
                         const newMessage = document.createElement('p');
                         newMessage.className = "message";
+                        // Display only the first 6 characters of the UID
+                        const shortUID = data.uid.substring(0, 6); // Show first 6 characters of the UID
                         newMessage.innerHTML = `
                             <span class="nickname" style="color: ${data.isAdmin ? 'rainbow' : data.color};">${data.nickname}:</span>
-                            <span class="uid" style="color: #888;">(${data.uid})</span>
+                            <span class="uid" style="color: #888;">(${shortUID})</span>
                             <span>: ${data.message}</span>
                         `;
                         messagesDiv.appendChild(newMessage);
@@ -219,9 +219,10 @@
                     }
                 });
 
+                // Add event listener to the send button
                 sendButton.addEventListener('click', sendMessage);
 
-                // Send message on Enter key press
+                // Allow sending messages with the Enter key
                 input.addEventListener('keydown', (event) => {
                     if (event.key === 'Enter') {
                         sendMessage();
@@ -247,9 +248,6 @@
     </script>
 </body>
 </html>
-
-
-
 
 
 
