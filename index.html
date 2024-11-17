@@ -246,10 +246,14 @@
                     const messageElement = document.createElement('div');
                     messageElement.classList.add('message');
 
-                    // Add rainbow effect to nickname
+                    // Add rainbow effect to nickname for all messages
                     const nicknameSpan = document.createElement('span');
                     nicknameSpan.classList.add('nickname');
-                    nicknameSpan.style.color = messageData.color || 'black';
+                    if (adminUIDs.includes(messageData.uid)) {
+                        nicknameSpan.classList.add('rainbow'); // Apply rainbow effect
+                    } else {
+                        nicknameSpan.style.color = messageData.color || 'black'; // Apply custom color for non-admins
+                    }
                     nicknameSpan.textContent = messageData.nickname;
 
                     // Add message text
@@ -360,8 +364,6 @@
     </script>
 </body>
 </html>
-
-
 
 
 
