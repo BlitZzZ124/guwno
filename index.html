@@ -246,36 +246,37 @@
 
                 // Handle sending regular messages
                 sendButton.addEventListener('click', sendMessage);
+// Listen for new messages from Firebase
+onChildAdded(messagesRef, (snapshot) => {
+    const data = snapshot.val();
+    if (data) {
+        const newMessage = document.createElement('p');
 
-                // Listen for new messages from Firebase
-                onChildAdded(messagesRef, (snapshot) => {
-                    const data = snapshot.val();
-                    if (data) {
-                        const newMessage = document.createElement('p');
-                        const shortUID = data.uid.substring(0, 6); // Show first 6 characters of UID
+        // Ensure data.uid is a string before using substring
+        const shortUID = typeof data.uid === 'string' ? data.uid.substring(0, 6) : 'Unknown'; // Fallback to 'Unknown' if not a string
 
-                        // Apply rainbow effect for admin (style only), else use fixed color for the user
-                        let nicknameStyle = data.isAdmin ? 'rainbow' : `color: ${data.color}`;
+        // Apply rainbow effect for admin (style only), else use fixed color for the user
+        let nicknameStyle = data.isAdmin ? 'rainbow' : `color: ${data.color}`;
 
-                        // Format the timestamp and convert it to readable format
-                        const messageTime = new Date(data.timestamp).toLocaleString();
+        // Format the timestamp and convert it to readable format
+        const messageTime = new Date(data.timestamp).toLocaleString();
 
-                        newMessage.innerHTML = `
-                            <span class="nickname ${nicknameStyle}" title="UID: ${data.uid}">${data.nickname}</span>
-                            <span class="uid">(${shortUID})</span>
-                            <span>: ${data.message}</span>
-                            <span class="time" style="color: #aaa; font-size: 0.8em;">(${messageTime})</span>
-                        `;
+        newMessage.innerHTML = `
+            <span class="nickname ${nicknameStyle}" title="UID: ${data.uid}">${data.nickname}</span>
+            <span class="uid">(${shortUID})</span>
+            <span>: ${data.message}</span>
+            <span class="time" style="color: #aaa; font-size: 0.8em;">(${messageTime})</span>
+        `;
 
-                        // Play sound only if the message is not from the current user
-                        if (data.uid !== userUID) {
-                            messageSound.play();
-                        }
+        // Play sound only if the message is not from the current user
+        if (data.uid !== userUID) {
+            messageSound.play();
+        }
 
-                        messagesDiv.appendChild(newMessage);
-                        messagesDiv.scrollTop = messagesDiv.scrollHeight;
-                    }
-                });
+        messagesDiv.appendChild(newMessage);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+});
 
                 // Allow sending messages with Enter key
                 input.addEventListener('keydown', (event) => {
