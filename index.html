@@ -256,9 +256,21 @@
                     }
                     nicknameSpan.textContent = messageData.nickname;
 
+                    // Show UID when hovering over the nickname
+                    const uidSpan = document.createElement('span');
+                    uidSpan.classList.add('uid');
+                    uidSpan.textContent = messageData.uid; // Add the UID
+                    nicknameSpan.appendChild(uidSpan);
+
                     // Add message text
                     const textSpan = document.createElement('span');
                     textSpan.textContent = ': ' + messageData.text;
+
+                    // Add timestamp next to the message
+                    const timestamp = new Date(messageData.timestamp);
+                    const timeSpan = document.createElement('span');
+                    timeSpan.textContent = ` (${timestamp.toLocaleTimeString()})`; // Format the time
+                    textSpan.appendChild(timeSpan);
 
                     messageElement.appendChild(nicknameSpan);
                     messageElement.appendChild(textSpan);
@@ -364,6 +376,7 @@
     </script>
 </body>
 </html>
+
 
 
 
