@@ -255,14 +255,16 @@ onChildAdded(messagesRef, (snapshot) => {
         // Ensure data.uid is a string before using substring
         const shortUID = typeof data.uid === 'string' ? data.uid.substring(0, 6) : 'Unknown'; // Fallback to 'Unknown' if not a string
 
-        // Apply rainbow effect for admin (style only), else use fixed color for the user
-        let nicknameStyle = data.isAdmin ? 'rainbow' : `color: ${data.color}`;
+        // Determine if the user is an admin and apply styles accordingly
+        const nicknameStyle = data.isAdmin ? 'rainbow' : ''; // Add rainbow class for admins
+        const userColor = data.color || "#000000"; // Default to black if no color provided
 
         // Format the timestamp and convert it to readable format
         const messageTime = new Date(data.timestamp).toLocaleString();
 
+        // Build the message HTML
         newMessage.innerHTML = `
-            <span class="nickname ${nicknameStyle}" title="UID: ${data.uid}">${data.nickname}</span>
+            <span class="nickname ${nicknameStyle}" style="color: ${userColor};" title="UID: ${data.uid}">${data.nickname}</span>
             <span class="uid">(${shortUID})</span>
             <span>: ${data.message}</span>
             <span class="time" style="color: #aaa; font-size: 0.8em;">(${messageTime})</span>
@@ -273,6 +275,7 @@ onChildAdded(messagesRef, (snapshot) => {
             messageSound.play();
         }
 
+        // Append the new message and scroll to the bottom
         messagesDiv.appendChild(newMessage);
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
     }
