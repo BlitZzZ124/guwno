@@ -80,11 +80,17 @@
 
         .nickname {
             font-weight: bold;
+            cursor: pointer; /* Make it clear that it is hoverable */
         }
 
         .uid {
             font-size: 0.8em;
             color: #888;
+            display: none;
+        }
+
+        .message:hover .uid {
+            display: inline; /* Show UID when hovering over message */
         }
 
         #nickname-container {
@@ -128,6 +134,9 @@
         </div>
     </div>
 
+    <!-- Audio element to play sound -->
+    <audio id="messageSound" src="https://raw.githubusercontent.com/BlitZzZ124/guwno/main/gg.wav" preload="auto"></audio>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-app.js";
         import { getDatabase, ref, push, set, onChildAdded, onValue } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-database.js";
@@ -167,6 +176,7 @@
             const nicknameInput = document.getElementById('nickname');
             const changeNicknameButton = document.getElementById('changeNicknameButton');
             const nicknameCooldownMessage = document.getElementById('nicknameCooldownMessage');
+            const messageSound = document.getElementById('messageSound');
 
             let userUID = null;
             let nickname = "Anonymous"; // Default nickname
@@ -281,11 +291,19 @@
                         // Apply rainbow effect for admin (style only), else use fixed color for the user
                         let nicknameStyle = data.isAdmin ? 'rainbow' : `color: ${data.color}`;
 
+                        // Format the timestamp and convert it to readable format
+                        const messageTime = new Date(data.timestamp).toLocaleString();
+
                         newMessage.innerHTML = `
-                            <span class="nickname ${nicknameStyle}">${data.nickname}:</span>
-                            <span class="uid" style="color: #888;">(${shortUID})</span>
+                            <span class="nickname ${nicknameStyle}" title="UID: ${data.uid}">${data.nickname}</span>
+                            <span class="uid">(${shortUID})</span>
                             <span>: ${data.message}</span>
+                            <span class="time" style="color: #aaa; font-size: 0.8em;">(${messageTime})</span>
                         `;
+
+                        // Play sound when a new message arrives
+                        messageSound.play();
+
                         messagesDiv.appendChild(newMessage);
                         messagesDiv.scrollTop = messagesDiv.scrollHeight;
                     }
