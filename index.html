@@ -192,6 +192,7 @@
             let userUID = null;
             let nickname = "Anonymous"; // Default nickname
             let color = "#000000"; // Default color (black)
+            let lastNicknameChange = localStorage.getItem('lastNicknameChange') || 0;
 
             // Handle login or signup process
             async function handleAuth() {
@@ -326,6 +327,25 @@
                         } else {
                             commandMessage.style.display = 'inline';
                         }
+                    }
+                });
+
+                // Change nickname logic
+                changeNicknameButton.addEventListener('click', () => {
+                    const currentTime = Date.now();
+                    if (currentTime - lastNicknameChange < 15 * 60 * 1000) { // 15 minutes cooldown
+                        nicknameCooldownMessage.style.display = 'inline';
+                        return;
+                    }
+
+                    const newNickname = nicknameInput.value.trim();
+                    if (newNickname && newNickname !== nickname) {
+                        nickname = newNickname;
+                        set(ref(db, 'users/' + userUID), { nickname, color });
+                        lastNicknameChange = currentTime;
+                        localStorage.setItem('lastNicknameChange', lastNicknameChange);
+                        localStorage.setItem('nickname', nickname);
+                        nicknameCooldownMessage.style.display = 'none';
                     }
                 });
             }
