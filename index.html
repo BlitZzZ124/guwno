@@ -22,71 +22,6 @@
 <a href="https://steamcommunity.com/id/nxxxlf/">Steam</a>
 
 
-<!-- Firebase SDKs -->
-<script src="https://www.gstatic.com/firebasejs/9.16.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.16.0/firebase-database.js"></script>
-
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-app.js";
-    import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-database.js";
-
-    // Firebase configuration
-    const firebaseConfig = {
-            apiKey: "AIzaSyCk8jPJpt_83lhgl1j2R3_tLK776wyodpA",
-            authDomain: "chat-85d04.firebaseapp.com",
-            databaseURL: "https://chat-85d04-default-rtdb.europe-west1.firebasedatabase.app",
-            projectId: "chat-85d04",
-            storageBucket: "chat-85d04.firebasestorage.app",
-            messagingSenderId: "1067572204091",
-            appId: "1:1067572204091:web:11f459b6760c4a4dcec21e",
-            measurementId: "G-PHPR2T1DNJ"
-    };
-
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-
-    // Visitor Counter Reference
-    const visitorCounterRef = ref(db, 'visitorCount');
-
-    // Increment the counter for each unique visit
-    function incrementVisitorCount() {
-        const visited = localStorage.getItem('visited');
-        if (!visited) {
-            localStorage.setItem('visited', 'true'); // Mark as visited
-            get(visitorCounterRef).then((snapshot) => {
-                if (snapshot.exists()) {
-                    const currentCount = snapshot.val() || 0;
-                    set(visitorCounterRef, currentCount + 1); // Increment by 1
-                } else {
-                    set(visitorCounterRef, 1); // Initialize to 1 if not set
-                }
-            }).catch((error) => console.error("Error updating visitor count:", error));
-        }
-    }
-
-    // Display the visitor count
-    function displayVisitorCount() {
-        get(visitorCounterRef).then((snapshot) => {
-            if (snapshot.exists()) {
-                const count = snapshot.val();
-                document.getElementById('visitorCount').textContent = `Visitors: ${count}`;
-            } else {
-                document.getElementById('visitorCount').textContent = `Visitors: 0`;
-            }
-        }).catch((error) => console.error("Error retrieving visitor count:", error));
-    }
-
-    // Increment on page load and display
-    document.addEventListener("DOMContentLoaded", () => {
-        incrementVisitorCount();
-        displayVisitorCount();
-    });
-</script>
-
-
-
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -127,7 +62,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-app.js";
-        import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-database.js";
+        import { getDatabase, ref, push, onChildAdded, remove } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-database.js";
 
         // Firebase configuration
         const firebaseConfig = {
@@ -148,6 +83,24 @@
             const app = initializeApp(firebaseConfig);
             const db = getDatabase(app);
             console.log("Firebase initialized");
+
+            const messagesRef = ref(db, 'messages'); // Reference to the messages node
+
+            // Function to clear messages
+            function clearMessages() {
+                remove(messagesRef)
+                    .then(() => {
+                        console.log("Old messages cleared from chatroom.");
+                    })
+                    .catch((error) => {
+                        console.error("Error clearing messages:", error);
+                    });
+            }
+
+            // Set interval to clear messages every 15 minutes
+            setInterval(() => {
+                clearMessages();
+            }, 15 * 60 * 1000); // 15 minutes in milliseconds
 
             // Retrieve or set a random UID for the user
             let userUID = localStorage.getItem('userUID');
@@ -222,7 +175,7 @@
 
             // Cooldown Variables
             let lastMessageTimestamp = 0;
-            const cooldownPerLetter = 0; // Cooldown per letter in milliseconds
+            const cooldownPerLetter = 500; // Cooldown per letter in milliseconds
             const maxMessageLength = 500; // Maximum characters allowed in a message
 
             // Send a message function
@@ -244,7 +197,6 @@
                 }
 
                 if (message) {
-                    const messagesRef = ref(db, 'messages');
                     push(messagesRef, {
                         message: message,
                         nickname: nickname,
@@ -265,7 +217,6 @@
             }
 
             // Listen for new messages from Firebase Realtime Database
-            const messagesRef = ref(db, 'messages');
             onChildAdded(messagesRef, (snapshot) => {
                 const data = snapshot.val();
                 if (data) {
@@ -290,10 +241,7 @@
                     sendMessage();
                 }
             });
-        });
-    </script>
-</body>
-</html>
+
 
 
 
