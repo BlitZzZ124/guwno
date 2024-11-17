@@ -249,18 +249,25 @@
                     // Add rainbow effect to nickname
                     const nicknameSpan = document.createElement('span');
                     nicknameSpan.classList.add('nickname');
-                    if (adminUIDs.includes(messageData.uid)) {
-                        nicknameSpan.classList.add('rainbow'); // Add rainbow effect for admins
-                    }
-                    nicknameSpan.style.color = messageData.color;
-                    nicknameSpan.innerText = messageData.nickname;
+                    nicknameSpan.style.color = messageData.color || 'black';
+                    nicknameSpan.textContent = messageData.nickname;
+
+                    // Add message text
+                    const textSpan = document.createElement('span');
+                    textSpan.textContent = ': ' + messageData.text;
 
                     messageElement.appendChild(nicknameSpan);
-                    messageElement.innerHTML += ": " + messageData.text;
+                    messageElement.appendChild(textSpan);
+
+                    // Check if the sender is not the current user, play sound
+                    if (messageData.uid !== userUID) {
+                        messageSound.play();
+                    }
+
                     messagesDiv.appendChild(messageElement);
 
-                    // Play sound when a new message is received
-                    messageSound.play();
+                    // Auto scroll the chatbox down when a new message is added
+                    messagesDiv.scrollTop = messagesDiv.scrollHeight;
                 });
 
                 // Setup input and send button
