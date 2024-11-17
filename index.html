@@ -28,7 +28,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chatroom with Admin and Nickname</title>
+    <title>Chatroom nevelose.xyz</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
         #chat { max-width: 500px; margin: 50px auto; }
@@ -40,7 +40,6 @@
         .nickname { font-weight: bold; }
         .uid { font-size: 0.8em; color: #888; }
         #nickname-container { margin-bottom: 10px; }
-        #auth-container { text-align: center; margin-top: 20px; }
     </style>
 </head>
 <body>
@@ -59,22 +58,11 @@
             <button id="changeNicknameButton">Change Nickname</button>
             <span id="nicknameCooldownMessage" style="color: red; font-size: 0.9em; display: none;">You can change your nickname in 15 minutes.</span>
         </div>
-
-        <!-- Authentication (Sign Up and Log In) -->
-        <div id="auth-container">
-            <div id="auth-form">
-                <h3>Sign Up or Log In</h3>
-                <input type="email" id="email" placeholder="Email" required>
-                <input type="password" id="password" placeholder="Password" required>
-                <button id="authButton">Sign Up / Log In</button>
-                <p id="authMessage" style="color: red;"></p>
-            </div>
-        </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-app.js";
-        import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-database.js";
+        import { getDatabase, ref, push, onChildAdded, set, onValue } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-database.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-auth.js";
 
         // Firebase configuration
@@ -237,7 +225,6 @@
                 // Handle nickname change
                 changeNicknameButton.addEventListener('click', () => {
                     if (!canChangeNickname()) return;
-
                     const newNickname = nicknameInput.value.trim();
                     if (newNickname) {
                         localStorage.setItem('nickname', newNickname);
@@ -265,6 +252,7 @@
     </script>
 </body>
 </html>
+
 
 
 
