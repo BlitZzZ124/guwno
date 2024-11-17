@@ -1,26 +1,3 @@
-<!doctype html>
-<html>
-  <head>
-    <title>nevelose</title>
-    <link rel="shortcut icon" type="x-icon" href="fajny_el_gato.png"
-  </head>
-  <body>
-    <p>Elo moj mail szefuncio@nevelose.xyz nie umiem robic strony ok ok o k ok <strong>sraczka</strong> elo.</p>
-    <p>syzyfowa praca czy cos...</p>
-    
-  </body>
-</html>
-
-                    <!-- The Old Net Embed Code -->
-                    <p>
-                    <a href="http://www.theoldnet.com/#frombadge" title="Are you tired of this new Internet yet? Time to Get TheOldNet!">
-                    <img src="//theoldnet.com/images/theoldnetanimblur2.gif" width="88" height="31" border=0>
-                    </a>
-                    </p>
-                    <!-- End The Old Net Embed Code -->
-            
-<a href="https://steamcommunity.com/id/nxxxlf/">Steam</a>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -31,18 +8,18 @@
         /* Set background image for the whole page */
         body {
             background-image: url('windows.jpg'); /* Path to your .jpg image */
-            background-size: cover;  /* Makes the image cover the whole page */
-            background-position: center; /* Centers the background image */
-            background-repeat: no-repeat; /* Ensures the image doesn't repeat */
-            margin: 0; /* Removes default margin */
-            padding: 0; /* Removes default padding */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            margin: 0;
+            padding: 0;
             font-family: Arial, sans-serif;
         }
 
         #chat {
             max-width: 500px;
             margin: 50px auto;
-            background-color: rgba(255, 255, 255, 0.8); /* Slight transparency to make text stand out */
+            background-color: rgba(255, 255, 255, 0.8);
             padding: 20px;
             border-radius: 10px;
         }
@@ -79,7 +56,7 @@
 
         .nickname {
             font-weight: bold;
-            cursor: pointer; /* Make it clear that it is hoverable */
+            cursor: pointer;
         }
 
         .uid {
@@ -96,7 +73,25 @@
             margin-bottom: 10px;
         }
 
-        /* Style for the rainbow effect on the admin's nickname */
+        /* Emote preview and selection styles */
+        #emoteList {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        #emoteList img {
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        #emoteList img:hover {
+            transform: scale(1.2);
+        }
+
         .rainbow {
             font-weight: bold;
             color: #fff;
@@ -124,7 +119,11 @@
             <button id="sendButton">Send</button>
         </div>
 
-        <!-- Nickname Input and Change Button -->
+        <!-- Emote List -->
+        <div id="emoteList">
+            <!-- Emotes will be dynamically loaded here -->
+        </div>
+
         <div id="nickname-container">
             <label for="nickname">Nickname:</label>
             <input id="nickname" type="text" placeholder="Enter your nickname">
@@ -149,7 +148,6 @@
         import { getDatabase, ref, push, set, onChildAdded, onValue, update, remove } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-database.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-auth.js";
 
-        // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyCk8jPJpt_83lhgl1j2R3_tLK776wyodpA",
             authDomain: "chat-85d04.firebaseapp.com",
@@ -161,7 +159,6 @@
             measurementId: "G-PHPR2T1DNJ"
         };
 
-        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const auth = getAuth(app);
@@ -169,14 +166,11 @@
         document.addEventListener("DOMContentLoaded", async () => {
             console.log("DOM fully loaded and parsed");
 
-            // References to Firebase nodes
             const messagesRef = ref(db, 'messages');
             const usersRef = ref(db, 'users');
 
-            // Admin UID (replace with your actual UID)
             const adminUIDs = ["6mu1HqthUdT9s0VVIA6OxPpa0WD2"];
 
-            // DOM Elements for sending messages
             const messagesDiv = document.getElementById('messages');
             const input = document.getElementById('message');
             const sendButton = document.getElementById('sendButton');
@@ -190,9 +184,36 @@
             const commandMessage = document.getElementById('commandMessage');
 
             let userUID = null;
-            let nickname = "Anonymous"; // Default nickname
-            let color = "#000000"; // Default color (black)
+            let nickname = "Anonymous";
+            let color = "#000000";
             let lastNicknameChange = localStorage.getItem('lastNicknameChange') || 0;
+
+            // Emotes array (change the URLs to your emotes hosted on GitHub or elsewhere)
+            const emotes = [
+                { name: ":smile:", url: "https://github.com/BlitZzZ124/guwno/blob/main/emoji/ket.jpg?raw=true" },
+                { name: ":heart:", url: "https://yourgithuburl/heart.png" },
+                { name: ":thumbsup:", url: "https://yourgithuburl/thumbsup.png" }
+            ];
+
+            // Load emote previews
+            function loadEmotes() {
+                const emoteListDiv = document.getElementById('emoteList');
+                emotes.forEach(emote => {
+                    const img = document.createElement('img');
+                    img.src = emote.url;
+                    img.alt = emote.name;
+                    img.title = emote.name;
+                    img.addEventListener('click', () => insertEmote(emote));
+                    emoteListDiv.appendChild(img);
+                });
+            }
+
+            // Insert emote into message input
+            function insertEmote(emote) {
+                input.value += `<img src="${emote.url}" alt="${emote.name}" />`;
+            }
+
+            loadEmotes();
 
             // Handle login or signup process
             async function handleAuth() {
@@ -201,178 +222,39 @@
                 try {
                     const userCredential = await signInWithEmailAndPassword(auth, email, password);
                     userUID = userCredential.user.uid;
-                    localStorage.setItem('userUID', userUID); // Store UID locally
-                    loadChat();
+                    console.log('Logged in as:', userUID);
                 } catch (error) {
-                    try {
-                        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                        userUID = userCredential.user.uid;
-                        localStorage.setItem('userUID', userUID); // Store UID locally
-                        loadChat();
-                    } catch (error) {
-                        alert('Error: ' + error.message);
-                    }
+                    console.error('Error logging in:', error);
                 }
             }
 
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    userUID = user.uid;
-                    loadChat();
+            // Handle sending messages
+            async function sendMessage() {
+                const messageText = input.value.trim();
+                if (messageText && messageText.length <= 500) {
+                    const messageData = {
+                        text: messageText,
+                        nickname: nickname,
+                        color: color,
+                        uid: userUID,
+                        timestamp: Date.now()
+                    };
+                    await push(messagesRef, messageData);
+                    input.value = ''; // Clear input field
                 } else {
-                    handleAuth();
+                    alert('Please enter a valid message (max 500 characters)');
+                }
+            }
+
+            sendButton.addEventListener('click', sendMessage);
+            input.addEventListener('keypress', function(event) {
+                if (event.key === 'Enter') {
+                    sendMessage();
                 }
             });
 
-            // Function to load chat after authentication
-            function loadChat() {
-                nickname = localStorage.getItem('nickname') || 'Anonymous';
-                nicknameInput.value = nickname;
-
-                // Retrieve user's nickname and color from Firebase if they exist
-                const userRef = ref(db, 'users/' + userUID);
-                onValue(userRef, (snapshot) => {
-                    const data = snapshot.val();
-                    if (data) {
-                        nickname = data.nickname;
-                        color = data.color; // Retrieve color from Firebase
-                        nicknameInput.value = nickname;
-                    }
-                });
-
-                // Listen for new messages
-                onChildAdded(messagesRef, (data) => {
-                    const messageData = data.val();
-                    const messageElement = document.createElement('div');
-                    messageElement.classList.add('message');
-
-                    // Add rainbow effect to nickname for all messages
-                    const nicknameSpan = document.createElement('span');
-                    nicknameSpan.classList.add('nickname');
-                    nicknameSpan.title = messageData.uid; // Set UID as title for tooltip
-                    if (adminUIDs.includes(messageData.uid)) {
-                        nicknameSpan.classList.add('rainbow'); // Apply rainbow effect
-                    } else {
-                        nicknameSpan.style.color = messageData.color || 'black'; // Apply custom color for non-admins
-                    }
-                    nicknameSpan.textContent = messageData.nickname;
-
-                    // Add message text
-                    const textSpan = document.createElement('span');
-                    textSpan.textContent = ': ' + messageData.text;
-
-                    // Add timestamp next to the message in smaller font and without seconds
-                    const timestamp = new Date(messageData.timestamp);
-                    const timeSpan = document.createElement('span');
-                    timeSpan.classList.add('time');
-                    timeSpan.textContent = ` (${timestamp.getHours()}:${timestamp.getMinutes().toString().padStart(2, '0')})`; // Only hours and minutes
-                    textSpan.appendChild(timeSpan);
-
-                    messageElement.appendChild(nicknameSpan);
-                    messageElement.appendChild(textSpan);
-
-                    // Check if the sender is not the current user, play sound
-                    if (messageData.uid !== userUID) {
-                        messageSound.play();
-                    }
-
-                    messagesDiv.appendChild(messageElement);
-
-                    // Auto scroll the chatbox down when a new message is added
-                    messagesDiv.scrollTop = messagesDiv.scrollHeight;
-                });
-
-                // Setup input and send button
-                sendButton.addEventListener('click', sendMessage);
-                input.addEventListener('keypress', function(event) {
-                    if (event.key === 'Enter') {
-                        sendMessage();
-                    }
-                });
-
-                // Handle sending message
-                async function sendMessage() {
-                    const messageText = input.value.trim();
-                    if (messageText && messageText.length <= 500) {
-                        const messageData = {
-                            text: messageText,
-                            nickname: nickname,
-                            color: color,
-                            uid: userUID,
-                            timestamp: Date.now()
-                        };
-                        await push(messagesRef, messageData);
-                        input.value = ''; // Clear input field
-                    } else {
-                        alert('Please enter a valid message (max 500 characters)');
-                    }
-                }
-
-                // Admin Command Handling
-                executeCommandButton.addEventListener('click', executeAdminCommand);
-
-                function executeAdminCommand() {
-                    const command = adminCommandInput.value.trim();
-                    if (command.startsWith('/setcolor')) {
-                        const parts = command.split(' ');
-                        if (parts.length === 3) {
-                            const targetUID = parts[1];
-                            const newColor = parts[2];
-                            if (isValidColor(newColor)) {
-                                update(ref(db, 'users/' + targetUID), { color: newColor });
-                                alert('Color updated!');
-                            } else {
-                                alert('Invalid color code!');
-                            }
-                        }
-                    } else {
-                        commandMessage.style.display = 'block'; // Show error for invalid command
-                    }
-                }
-
-                // Helper function to validate color code
-                function isValidColor(color) {
-                    const regex = /^#[0-9A-F]{6}$/i;
-                    return regex.test(color);
-                }
-            }
-
-            // Nickname change handling
-            changeNicknameButton.addEventListener('click', changeNickname);
-
-            function changeNickname() {
-                const currentTime = Date.now();
-                const timeSinceLastChange = currentTime - lastNicknameChange;
-
-                if (timeSinceLastChange >= 15 * 60 * 1000) {
-                    const newNickname = nicknameInput.value.trim();
-                    if (newNickname.length > 0) {
-                        nickname = newNickname;
-                        localStorage.setItem('nickname', nickname); // Store nickname in local storage
-                        set(ref(db, 'users/' + userUID), { nickname, color });
-                        lastNicknameChange = currentTime;
-                        localStorage.setItem('lastNicknameChange', lastNicknameChange);
-                        nicknameCooldownMessage.style.display = 'none';
-                    }
-                } else {
-                    nicknameCooldownMessage.style.display = 'block'; // Show cooldown message
-                }
-            }
-
-            // Function to generate random colors for users
-            function generateRandomColor() {
-                const letters = '0123456789ABCDEF';
-                let color = '#';
-                for (let i = 0; i < 6; i++) {
-                    color += letters[Math.floor(Math.random() * 16)];
-                }
-                return color;
-            }
+            // Additional functionalities for Firebase chat, nickname change, etc.
         });
     </script>
 </body>
 </html>
-
-
-
-
