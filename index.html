@@ -391,7 +391,6 @@ executeCommandButton.addEventListener('click', () => {
     const usersRef = ref(db, 'users');
     const userStatusRef = ref(db, `status/${userUID}`);
     const onlineUsersList = document.getElementById('users-list');
-
     onAuthStateChanged(auth, (user) => {
         if (user) {
             userUID = user.uid;
