@@ -351,21 +351,6 @@ onChildAdded(messagesRef, (data) => {
                 }
                 return color;
             }
-
-            // Cleanup old messages every minute
-            setInterval(cleanupMessages, 3600 * 1000);
-
-            async function cleanupMessages() {
-                const snapshot = await get(messagesRef);
-                const currentTime = Date.now();
-                snapshot.forEach(childSnapshot => {
-                    const messageData = childSnapshot.val();
-                    if (currentTime - messageData.timestamp > 15 * 60 * 1000) {
-                        remove(childSnapshot.ref); // Delete messages older than 15 minutes
-                    }
-                });
-            }
-        });
     </script>
 </body>
 </html>
