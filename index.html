@@ -42,9 +42,20 @@
 
         /* Style for the rainbow effect on the admin's nickname */
         .rainbow {
-            background-image: linear-gradient(to left, red, orange, yellow, green, cyan, blue, violet);
-            -webkit-background-clip: text;
-            color: transparent; /* Make the text transparent so the gradient is visible */
+            font-weight: bold;
+            color: #fff;
+            animation: rainbowAnimation 5s linear infinite;
+        }
+
+        @keyframes rainbowAnimation {
+            0% { color: red; }
+            14% { color: orange; }
+            28% { color: yellow; }
+            42% { color: green; }
+            57% { color: cyan; }
+            71% { color: blue; }
+            85% { color: violet; }
+            100% { color: red; }
         }
     </style>
 </head>
@@ -217,10 +228,10 @@
                         const shortUID = data.uid.substring(0, 6); // Show first 6 characters of UID
 
                         // Apply rainbow effect for admin (style only), else use fixed color for the user
-                        let nicknameStyle = data.isAdmin ? 'background-image: linear-gradient(to left, red, orange, yellow, green, cyan, blue, violet); -webkit-background-clip: text; color: transparent;' : `color: ${data.color}`;
+                        let nicknameStyle = data.isAdmin ? 'rainbow' : `color: ${data.color}`;
 
                         newMessage.innerHTML = `
-                            <span class="nickname" style="${nicknameStyle}">${data.nickname}:</span>
+                            <span class="nickname ${nicknameStyle}">${data.nickname}:</span>
                             <span class="uid" style="color: #888;">(${shortUID})</span>
                             <span>: ${data.message}</span>
                         `;
@@ -260,6 +271,7 @@
     </script>
 </body>
 </html>
+
 
 
 
