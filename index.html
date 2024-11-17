@@ -240,9 +240,16 @@
                     }
                 });
 
-                // Listen for new messages
+               // Listen for new messages
 onChildAdded(messagesRef, (data) => {
     const messageData = data.val();
+    
+    // Check if userUID is set before processing
+    if (!userUID) {
+        console.error("User UID is not set");
+        return;
+    }
+
     const messageElement = document.createElement('div');
     messageElement.classList.add('message');
 
@@ -259,11 +266,17 @@ onChildAdded(messagesRef, (data) => {
     messageElement.innerHTML += ": " + messageData.text;
     messagesDiv.appendChild(messageElement);
 
+    // Log for debugging
+    console.log("Message received from:", messageData.nickname);
+    console.log("User UID:", userUID);
+
     // Play sound only if the message is from someone else
     if (messageData.uid !== userUID) {
+        console.log("Playing sound for new message from another user");
         messageSound.play();
     }
 });
+
 
                 // Setup input and send button
                 sendButton.addEventListener('click', sendMessage);
