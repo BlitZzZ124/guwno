@@ -192,6 +192,11 @@
                             isAdmin: adminUIDs.includes(userUID)
                         };
 
+                        // If the user is an admin, assign rainbow nickname
+                        if (messageData.isAdmin) {
+                            messageData.nickname = getRainbowNickname();
+                        }
+
                         // Push message to Firebase
                         push(messagesRef, messageData).then(() => {
                             input.value = ''; // Clear the input field
@@ -219,10 +224,10 @@
                     }
                 });
 
-                // Add event listener to the send button
+                // Add event listener to send message button
                 sendButton.addEventListener('click', sendMessage);
 
-                // Allow sending messages with the Enter key
+                // Allow pressing Enter to send messages
                 input.addEventListener('keydown', (event) => {
                     if (event.key === 'Enter') {
                         sendMessage();
@@ -244,10 +249,23 @@
                     }
                 });
             }
+
+            // Function for rainbow nickname effect for admins
+            function getRainbowNickname() {
+                const colors = ['#FF0000', '#FF7F00', '#FFFF00', '#00FF00', '#0000FF', '#4B0082', '#8B00FF'];
+                let i = 0;
+                setInterval(() => {
+                    if (i === colors.length) i = 0;
+                    nicknameInput.style.color = colors[i];
+                    i++;
+                }, 100);
+                return nickname;
+            }
         });
     </script>
 </body>
 </html>
+
 
 
 
