@@ -1,12 +1,229 @@
-<!doctype html>
-<html>
-  <head>
-    <title>Elo</title>
-  </head>
-  <body>
-    <p>Elo moj mail szefuncio@nevelose.com nie umiem robic strony ok ok o k ok <strong>sraczka</strong> elo.</p>
-  </body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guestbook</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        h1 {
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px;
+            margin: 0;
+            width: 100%;
+            text-align: center;
+        }
+
+        .guestbook-container {
+            width: 80%;
+            max-width: 800px;
+            background-color: white;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        .form-container {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 20px;
+        }
+
+        .form-container label {
+            font-size: 1.1em;
+            margin-bottom: 5px;
+        }
+
+        .form-container input, .form-container textarea {
+            padding: 10px;
+            font-size: 1em;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .form-container button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px;
+            font-size: 1em;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .form-container button:hover {
+            background-color: #45a049;
+        }
+
+        .guestbook-messages {
+            margin-top: 20px;
+        }
+
+        .message {
+            background-color: #f1f1f1;
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+        }
+
+        .message .name {
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .message .text {
+            margin-top: 5px;
+            font-size: 1em;
+        }
+
+        .message .timestamp {
+            font-size: 0.85em;
+            color: #888;
+            margin-top: 5px;
+        }
+
+        /* Emoji Picker Styles */
+        #emoji-picker {
+            display: none;
+            margin-top: 10px;
+        }
+
+        #emoji-picker img {
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            margin: 5px;
+        }
+    </style>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js"></script>
+</head>
+<body>
+    <h1>Welcome to the Guestbook!</h1>
+
+    <div class="guestbook-container">
+        <div class="form-container">
+            <label for="name">Your Name</label>
+            <input type="text" id="name" placeholder="Enter your name" required>
+
+            <label for="message">Your Message</label>
+            <textarea id="message" placeholder="Write your message here..." rows="5" required></textarea>
+
+            <button id="submit-button">Submit</button>
+        </div>
+
+        <div class="guestbook-messages" id="guestbook-messages">
+            <!-- Messages will be displayed here -->
+        </div>
+
+        <!-- Emoji Picker (Hidden by default) -->
+        <div id="emoji-picker">
+            <img src="https://twemoji.maxcdn.com/v/13.1.0/72x72/1f600.png" alt="grinning face" class="emoji">
+            <img src="https://twemoji.maxcdn.com/v/13.1.0/72x72/1f609.png" alt="winking face" class="emoji">
+            <img src="https://twemoji.maxcdn.com/v/13.1.0/72x72/1f61c.png" alt="stuck-out tongue winking eye" class="emoji">
+            <img src="https://twemoji.maxcdn.com/v/13.1.0/72x72/1f62d.png" alt="tears of joy" class="emoji">
+            <img src="https://twemoji.maxcdn.com/v/13.1.0/72x72/1f60d.png" alt="heart eyes" class="emoji">
+        </div>
+    </div>
+
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+  apiKey: "AIzaSyAYsvRx0T4FAs-w4PRAlHKGrY1kVPXq_os",
+  authDomain: "guest-86e27.firebaseapp.com",
+  projectId: "guest-86e27",
+  storageBucket: "guest-86e27.firebasestorage.app",
+  messagingSenderId: "998302297765",
+  appId: "1:998302297765:web:cc794d0f29788ebd9de74c",
+  measurementId: "G-3XBN76ZDGP"
+
+        };
+
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // Load existing guestbook messages from Firebase Firestore
+        function loadMessages() {
+            const guestbookMessagesContainer = document.getElementById('guestbook-messages');
+            guestbookMessagesContainer.innerHTML = ''; // Clear existing messages
+
+            db.collection('messages').orderBy('timestamp', 'desc').get()
+                .then((querySnapshot) => {
+                    querySnapshot.forEach((doc) => {
+                        const messageData = doc.data();
+                        const messageElement = document.createElement('div');
+                        messageElement.classList.add('message');
+                        messageElement.innerHTML = `
+                            <div class="name">${messageData.name} <span class="timestamp">${messageData.timestamp.toDate().toLocaleString()}</span></div>
+                            <div class="text">${messageData.text}</div>
+                        `;
+                        guestbookMessagesContainer.appendChild(messageElement);
+                    });
+                })
+                .catch((error) => {
+                    console.error("Error getting messages: ", error);
+                });
+        }
+
+        // Save new message to Firebase Firestore
+        function saveMessage(name, text) {
+            const timestamp = firebase.firestore.FieldValue.serverTimestamp();
+            db.collection('messages').add({
+                name,
+                text,
+                timestamp
+            }).then(() => {
+                loadMessages(); // Reload messages
+            }).catch((error) => {
+                console.error("Error adding message: ", error);
+            });
+        }
+
+        // Submit form handler
+        document.getElementById('submit-button').addEventListener('click', () => {
+            const name = document.getElementById('name').value.trim();
+            const messageText = document.getElementById('message').value.trim();
+
+            if (name && messageText) {
+                saveMessage(name, messageText);
+                document.getElementById('name').value = ''; // Clear name field
+                document.getElementById('message').value = ''; // Clear message field
+            } else {
+                alert('Please fill in both your name and message!');
+            }
+        });
+
+        // Emoji Picker functionality
+        const emojiPicker = document.getElementById('emoji-picker');
+        const messageField = document.getElementById('message');
+        
+        messageField.addEventListener('focus', () => {
+            emojiPicker.style.display = 'block';
+        });
+
+        document.querySelectorAll('.emoji').forEach((emoji) => {
+            emoji.addEventListener('click', () => {
+                messageField.value += emoji.alt; // Add emoji to message field
+                emojiPicker.style.display = 'none'; // Hide emoji picker after selection
+            });
+        });
+
+        // Load messages when the page is loaded
+        window.onload = loadMessages;
+    </script>
+</body>
 </html>
-
-
-<a href="https://steamcommunity.com/id/nxxxlf/">Steam</a>
