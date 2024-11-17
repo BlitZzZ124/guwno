@@ -28,7 +28,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chatroom nevelose.xyz</title>
+    <title>Chatroom with Admin and Nickname</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
         #chat { max-width: 500px; margin: 50px auto; }
@@ -40,7 +40,7 @@
         .nickname { font-weight: bold; }
         .uid { font-size: 0.8em; color: #888; }
         #nickname-container { margin-bottom: 10px; }
-        
+
         /* Style for the rainbow effect on the admin's nickname */
         .rainbow {
             background-image: linear-gradient(to left, red, orange, yellow, green, cyan, blue, violet);
@@ -171,7 +171,7 @@
                 // Function to send a message
                 function sendMessage() {
                     const message = input.value.trim();
-                    if (message) {
+                    if (message && userUID) {
                         const messageData = {
                             message: message,
                             nickname: nickname,
@@ -245,6 +245,7 @@
     </script>
 </body>
 </html>
+
 
 
 
