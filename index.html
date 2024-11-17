@@ -285,7 +285,6 @@
                     const data = snapshot.val();
                     if (data) {
                         const newMessage = document.createElement('p');
-                        newMessage.className = "message";
                         const shortUID = data.uid.substring(0, 6); // Show first 6 characters of UID
 
                         // Apply rainbow effect for admin (style only), else use fixed color for the user
@@ -301,8 +300,10 @@
                             <span class="time" style="color: #aaa; font-size: 0.8em;">(${messageTime})</span>
                         `;
 
-                        // Play sound when a new message arrives
-                        messageSound.play();
+                        // Play sound only if the message is not from the current user
+                        if (data.uid !== userUID) {
+                            messageSound.play();
+                        }
 
                         messagesDiv.appendChild(newMessage);
                         messagesDiv.scrollTop = messagesDiv.scrollHeight;
@@ -340,6 +341,7 @@
     </script>
 </body>
 </html>
+
 
 
 
