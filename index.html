@@ -24,8 +24,6 @@
 
 
 
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -59,6 +57,7 @@
             <label for="nickname">Nickname:</label>
             <input id="nickname" type="text" placeholder="Enter your nickname">
             <button id="changeNicknameButton">Change Nickname</button>
+            <span id="nicknameCooldownMessage" style="color: red; font-size: 0.9em; display: none;">You can change your nickname in 15 minutes.</span>
         </div>
     </div>
 
@@ -106,14 +105,39 @@
             const nicknameInput = document.getElementById('nickname');
             nicknameInput.value = nickname;
 
-            // Change nickname functionality
+            // Change nickname functionality with cooldown
             const changeNicknameButton = document.getElementById('changeNicknameButton');
+            const nicknameCooldownMessage = document.getElementById('nicknameCooldownMessage');
+
+            const nicknameCooldownPeriod = 900 * 1000; // 900 seconds = 15 minutes in milliseconds
+            const lastNicknameChangeTimestamp = localStorage.getItem('lastNicknameChangeTimestamp');
+
+            // Check if nickname change is within cooldown period
+            function canChangeNickname() {
+                if (lastNicknameChangeTimestamp) {
+                    const timeElapsed = Date.now() - lastNicknameChangeTimestamp;
+                    if (timeElapsed < nicknameCooldownPeriod) {
+                        const remainingTime = Math.ceil((nicknameCooldownPeriod - timeElapsed) / 1000);
+                        nicknameCooldownMessage.textContent = `You can change your nickname in ${remainingTime} seconds.`;
+                        nicknameCooldownMessage.style.display = 'inline';
+                        return false;
+                    }
+                }
+                return true;
+            }
+
             changeNicknameButton.addEventListener('click', () => {
+                if (!canChangeNickname()) {
+                    return;
+                }
+
                 const newNickname = nicknameInput.value.trim();
                 if (newNickname && newNickname !== nickname) {
                     nickname = newNickname;
                     localStorage.setItem('nickname', nickname); // Save new nickname to localStorage
+                    localStorage.setItem('lastNicknameChangeTimestamp', Date.now()); // Update last nickname change timestamp
                     alert("Nickname updated to: " + nickname);
+                    nicknameCooldownMessage.style.display = 'none'; // Hide cooldown message
                 } else {
                     alert("Please enter a valid nickname.");
                 }
@@ -206,6 +230,7 @@
     </script>
 </body>
 </html>
+
 
 
 
