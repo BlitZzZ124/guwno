@@ -69,7 +69,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-app.js";
-        import { getDatabase, ref, push, onChildAdded, set, onValue } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-database.js";
+        import { getDatabase, ref, push, set, onChildAdded, onValue } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-database.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-auth.js";
 
         // Firebase configuration
@@ -109,6 +109,7 @@
 
             let userUID = null;
             let nickname = "Anonymous"; // Default nickname
+            let color = "#000000"; // Default color (black)
 
             // Change nickname cooldown settings
             const nicknameCooldownPeriod = 900 * 1000; // 900 seconds = 15 minutes
@@ -163,7 +164,23 @@
                 nickname = localStorage.getItem('nickname') || 'Anonymous';
                 nicknameInput.value = nickname;
 
-                // Generate a random color for non-admin users
+                // Retrieve user's nickname and color from Firebase if they exist
+                const userRef = ref(db, 'users/' + userUID);
+                onValue(userRef, (snapshot) => {
+                    const data = snapshot.val();
+                    if (data) {
+                        nickname = data.nickname;
+                        color = data.color;
+                        nicknameInput.value = nickname;
+                    } else {
+                        // If user doesn't have nickname and color, generate them
+                        nickname = "Anonymous";
+                        color = generateRandomColor();
+                        set(ref(db, 'users/' + userUID), { nickname, color });
+                    }
+                });
+
+                // Function to generate random color
                 function generateRandomColor() {
                     return '#' + Math.floor(Math.random() * 16777215).toString(16);
                 }
@@ -176,7 +193,7 @@
                             message: message,
                             nickname: nickname,
                             uid: userUID,
-                            color: generateRandomColor(), // Assign random color to nickname
+                            color: color, // Use fixed color for the user
                             timestamp: Date.now(),
                             isAdmin: adminUIDs.includes(userUID)
                         };
@@ -233,6 +250,7 @@
                             nickname = newNickname;
                             localStorage.setItem('nickname', nickname);
                             localStorage.setItem('lastNicknameChangeTimestamp', Date.now());
+                            set(ref(db, 'users/' + userUID), { nickname, color }); // Update nickname in Firebase
                             alert("Nickname updated to: " + nickname);
                             nicknameCooldownMessage.style.display = 'none'; // Hide cooldown message
                         } else {
@@ -245,6 +263,7 @@
     </script>
 </body>
 </html>
+
 
 
 
