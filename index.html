@@ -21,7 +21,6 @@
             
 <a href="https://steamcommunity.com/id/nxxxlf/">Steam</a>
 
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -241,12 +240,12 @@
                     const data = snapshot.val();
                     if (data) {
                         nickname = data.nickname;
-                        color = data.color;
+                        color = data.color; // Retrieve stored color
                         nicknameInput.value = nickname;
                     } else {
                         // If user doesn't have nickname and color, generate them
                         nickname = "Anonymous";
-                        color = generateRandomColor();
+                        color = generateRandomColor(); // Generate random color if not set
                         set(ref(db, 'users/' + userUID), { nickname, color });
                     }
                 });
@@ -268,9 +267,6 @@
                             timestamp: Date.now(),
                             isAdmin: adminUIDs.includes(userUID)
                         };
-
-                        // Admin gets rainbow nickname effect (style only)
-                        const nicknameStyle = messageData.isAdmin ? 'rainbow' : ''; // Admin gets rainbow effect, but keeps their actual nickname
 
                         push(messagesRef, messageData).then(() => {
                             input.value = ''; // Clear input field
