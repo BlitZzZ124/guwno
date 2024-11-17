@@ -240,43 +240,28 @@
                     }
                 });
 
-               // Listen for new messages
-onChildAdded(messagesRef, (data) => {
-    const messageData = data.val();
-    
-    // Check if userUID is set before processing
-    if (!userUID) {
-        console.error("User UID is not set");
-        return;
-    }
+                // Listen for new messages
+                onChildAdded(messagesRef, (data) => {
+                    const messageData = data.val();
+                    const messageElement = document.createElement('div');
+                    messageElement.classList.add('message');
 
-    const messageElement = document.createElement('div');
-    messageElement.classList.add('message');
+                    // Add rainbow effect to nickname
+                    const nicknameSpan = document.createElement('span');
+                    nicknameSpan.classList.add('nickname');
+                    if (adminUIDs.includes(messageData.uid)) {
+                        nicknameSpan.classList.add('rainbow'); // Add rainbow effect for admins
+                    }
+                    nicknameSpan.style.color = messageData.color;
+                    nicknameSpan.innerText = messageData.nickname;
 
-    // Add rainbow effect to nickname
-    const nicknameSpan = document.createElement('span');
-    nicknameSpan.classList.add('nickname');
-    if (adminUIDs.includes(messageData.uid)) {
-        nicknameSpan.classList.add('rainbow'); // Add rainbow effect for admins
-    }
-    nicknameSpan.style.color = messageData.color;
-    nicknameSpan.innerText = messageData.nickname;
+                    messageElement.appendChild(nicknameSpan);
+                    messageElement.innerHTML += ": " + messageData.text;
+                    messagesDiv.appendChild(messageElement);
 
-    messageElement.appendChild(nicknameSpan);
-    messageElement.innerHTML += ": " + messageData.text;
-    messagesDiv.appendChild(messageElement);
-
-    // Log for debugging
-    console.log("Message received from:", messageData.nickname);
-    console.log("User UID:", userUID);
-
-    // Play sound only if the message is from someone else
-    if (messageData.uid !== userUID) {
-        console.log("Playing sound for new message from another user");
-        messageSound.play();
-    }
-});
-
+                    // Play sound when a new message is received
+                    messageSound.play();
+                });
 
                 // Setup input and send button
                 sendButton.addEventListener('click', sendMessage);
@@ -367,7 +352,6 @@ onChildAdded(messagesRef, (data) => {
     </script>
 </body>
 </html>
-
 
 
 
