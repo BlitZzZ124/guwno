@@ -306,31 +306,40 @@ onChildAdded(messagesRef, (snapshot) => {
                     }
                 }
 
-                // Admin command to change color
-                executeCommandButton.addEventListener('click', () => {
-                    const command = adminCommandInput.value.trim();
-                    if (command.startsWith('/setcolor')) {
-                        const parts = command.split(' '); // Split command by space
-                        if (parts.length === 3) {
-                            const targetUID = parts[1]; // User UID
-                            const colorCode = parts[2]; // Color code (hex)
-                            if (/^#[0-9A-F]{6}$/i.test(colorCode)) { // Validate hex color code
-                                // Use update() to update only the color field
-                                update(ref(db, 'users/' + targetUID), {
-                                    color: colorCode
-                                }).then(() => {
-                                    alert(`Color of ${targetUID} changed to ${colorCode}`);
-                                }).catch((error) => {
-                                    console.error("Error changing color:", error);
-                                });
-                            } else {
-                                alert('Invalid hex color code!');
-                            }
-                        } else {
-                            commandMessage.style.display = 'inline';
-                        }
-                    }
+               // Admin command to change color
+executeCommandButton.addEventListener('click', () => {
+    const command = adminCommandInput.value.trim();
+    const parts = command.split(' '); // Split the command into parts
+    if (command.startsWith('/setcolor') && parts.length === 3) {
+        const targetUID = parts[1]; // Extract user UID
+        const colorCode = parts[2]; // Extract color code
+
+        // Validate the hex color code
+        if (!/^#[0-9A-F]{6}$/i.test(colorCode)) {
+            alert('Invalid hex color code! Example of valid code: #ff5733');
+            return;
+        }
+
+        // Check if the current user is an admin
+        if (adminUIDs.includes(userUID)) {
+            // Update the user's color in Firebase
+            const userRef = ref(db, `users/${targetUID}`);
+            update(userRef, { color: colorCode })
+                .then(() => {
+                    alert(`Successfully changed color for user with UID: ${targetUID}`);
+                })
+                .catch((error) => {
+                    console.error("Error updating color in database:", error);
+                    alert(`Failed to change color. Error: ${error.message}`);
                 });
+        } else {
+            alert('You do not have permission to use this command.');
+        }
+    } else {
+        alert('Invalid command syntax! Use: /setcolor <userUID> <#hexColor>');
+    }
+});
+
 
                 // Change nickname logic
                 changeNicknameButton.addEventListener('click', () => {
