@@ -146,7 +146,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-app.js";
-        import { getDatabase, ref, push, set, onChildAdded, onValue, update } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-database.js";
+        import { getDatabase, ref, push, set, onChildAdded, onValue, update, remove } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-database.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-auth.js";
 
         // Firebase configuration
@@ -244,135 +244,122 @@
                     }
                 });
 
-                // Handle sending regular messages
+                // Listen for new messages
+                onChildAdded(messagesRef, (data) => {
+                    const messageData = data.val();
+                    const messageElement = document.createElement('div');
+                    messageElement.classList.add('message');
+                    messageElement.innerHTML = `<span class="nickname" style="color: ${messageData.color}">${messageData.nickname}</span>: ${messageData.text}`;
+                    messagesDiv.appendChild(messageElement);
+
+                    // Play sound when a new message is received
+                    messageSound.play();
+                });
+
+                // Setup input and send button
                 sendButton.addEventListener('click', sendMessage);
-// Listen for new messages from Firebase
-onChildAdded(messagesRef, (snapshot) => {
-    const data = snapshot.val();
-    if (data) {
-        const newMessage = document.createElement('p');
-
-        // Ensure data.uid is a string before using substring
-        const shortUID = typeof data.uid === 'string' ? data.uid.substring(0, 6) : 'Unknown'; // Fallback to 'Unknown' if not a string
-
-        // Determine if the user is an admin and apply styles accordingly
-        const nicknameStyle = data.isAdmin ? 'rainbow' : ''; // Add rainbow class for admins
-        const userColor = data.color || "#000000"; // Default to black if no color provided
-
-        // Format the timestamp and convert it to readable format
-        const messageTime = new Date(data.timestamp).toLocaleString();
-
-        // Build the message HTML
-        newMessage.innerHTML = `
-            <span class="nickname ${nicknameStyle}" style="color: ${userColor};" title="UID: ${data.uid}">${data.nickname}</span>
-            <span class="uid">(${shortUID})</span>
-            <span>: ${data.message}</span>
-            <span class="time" style="color: #aaa; font-size: 0.8em;">(${messageTime})</span>
-        `;
-
-        // Play sound only if the message is not from the current user
-        if (data.uid !== userUID) {
-            messageSound.play();
-        }
-
-        // Append the new message and scroll to the bottom
-        messagesDiv.appendChild(newMessage);
-        messagesDiv.scrollTop = messagesDiv.scrollHeight;
-    }
-});
-
-                // Allow sending messages with Enter key
-                input.addEventListener('keydown', (event) => {
+                input.addEventListener('keypress', function(event) {
                     if (event.key === 'Enter') {
                         sendMessage();
                     }
                 });
 
-                // Function to send a message
-                function sendMessage() {
-                    const message = input.value.trim();
-                    if (message && userUID) {
+                // Handle sending message
+                async function sendMessage() {
+                    const messageText = input.value.trim();
+                    if (messageText && messageText.length <= 500) {
                         const messageData = {
-                            message: message,
+                            text: messageText,
                             nickname: nickname,
-                            uid: userUID,
                             color: color,
-                            timestamp: Date.now(),
-                            isAdmin: adminUIDs.includes(userUID)
+                            uid: userUID,
+                            timestamp: Date.now()
                         };
-
-                        push(messagesRef, messageData).then(() => {
-                            input.value = ''; // Clear input field
-                        }).catch((error) => {
-                            console.error("Error sending message:", error);
-                        });
+                        await push(messagesRef, messageData);
+                        input.value = ''; // Clear input field
+                    } else {
+                        alert('Please enter a valid message (max 500 characters)');
                     }
                 }
 
-               // Admin command to change color
-executeCommandButton.addEventListener('click', () => {
-    const command = adminCommandInput.value.trim();
-    const parts = command.split(' '); // Split the command into parts
-    if (command.startsWith('/setcolor') && parts.length === 3) {
-        const targetUID = parts[1]; // Extract user UID
-        const colorCode = parts[2]; // Extract color code
+                // Admin Command Handling
+                executeCommandButton.addEventListener('click', executeAdminCommand);
 
-        // Validate the hex color code
-        if (!/^#[0-9A-F]{6}$/i.test(colorCode)) {
-            alert('Invalid hex color code! Example of valid code: #ff5733');
-            return;
-        }
-
-        // Check if the current user is an admin
-        if (adminUIDs.includes(userUID)) {
-            // Update the user's color in Firebase
-            const userRef = ref(db, `users/${targetUID}`);
-            update(userRef, { color: colorCode })
-                .then(() => {
-                    alert(`Successfully changed color for user with UID: ${targetUID}`);
-                })
-                .catch((error) => {
-                    console.error("Error updating color in database:", error);
-                    alert(`Failed to change color. Error: ${error.message}`);
-                });
-        } else {
-            alert('You do not have permission to use this command.');
-        }
-    } else {
-        alert('Invalid command syntax! Use: /setcolor <userUID> <#hexColor>');
-    }
-});
-
-
-                // Change nickname logic
-                changeNicknameButton.addEventListener('click', () => {
-                    const currentTime = Date.now();
-                    if (currentTime - lastNicknameChange < 15 * 60 * 1000) { // 15 minutes cooldown
-                        nicknameCooldownMessage.style.display = 'inline';
-                        return;
+                function executeAdminCommand() {
+                    const command = adminCommandInput.value.trim();
+                    if (command.startsWith('/setcolor')) {
+                        const parts = command.split(' ');
+                        if (parts.length === 3) {
+                            const targetUID = parts[1];
+                            const newColor = parts[2];
+                            if (isValidColor(newColor)) {
+                                update(ref(db, 'users/' + targetUID), { color: newColor });
+                                alert('Color updated!');
+                            } else {
+                                alert('Invalid color code!');
+                            }
+                        }
+                    } else {
+                        commandMessage.style.display = 'block'; // Show error for invalid command
                     }
+                }
 
+                // Helper function to validate color code
+                function isValidColor(color) {
+                    const regex = /^#[0-9A-F]{6}$/i;
+                    return regex.test(color);
+                }
+            }
+
+            // Nickname change handling
+            changeNicknameButton.addEventListener('click', changeNickname);
+
+            function changeNickname() {
+                const currentTime = Date.now();
+                const timeSinceLastChange = currentTime - lastNicknameChange;
+
+                if (timeSinceLastChange >= 15 * 60 * 1000) {
                     const newNickname = nicknameInput.value.trim();
-                    if (newNickname && newNickname !== nickname) {
+                    if (newNickname.length > 0) {
                         nickname = newNickname;
+                        localStorage.setItem('nickname', nickname); // Store nickname in local storage
                         set(ref(db, 'users/' + userUID), { nickname, color });
                         lastNicknameChange = currentTime;
                         localStorage.setItem('lastNicknameChange', lastNicknameChange);
-                        localStorage.setItem('nickname', nickname);
                         nicknameCooldownMessage.style.display = 'none';
                     }
-                });
+                } else {
+                    nicknameCooldownMessage.style.display = 'block'; // Show cooldown message
+                }
             }
 
-            // Function to generate random color
+            // Function to generate random colors for users
             function generateRandomColor() {
-                return '#' + Math.floor(Math.random() * 16777215).toString(16);
+                const letters = '0123456789ABCDEF';
+                let color = '#';
+                for (let i = 0; i < 6; i++) {
+                    color += letters[Math.floor(Math.random() * 16)];
+                }
+                return color;
+            }
+
+            // Cleanup old messages every minute
+            setInterval(cleanupMessages, 60 * 1000);
+
+            async function cleanupMessages() {
+                const snapshot = await get(messagesRef);
+                const currentTime = Date.now();
+                snapshot.forEach(childSnapshot => {
+                    const messageData = childSnapshot.val();
+                    if (currentTime - messageData.timestamp > 15 * 60 * 1000) {
+                        remove(childSnapshot.ref); // Delete messages older than 15 minutes
+                    }
+                });
             }
         });
     </script>
 </body>
 </html>
-
 
 
 
