@@ -237,10 +237,6 @@
                         nickname = data.nickname;
                         color = data.color; // Retrieve color from Firebase
                         nicknameInput.value = nickname;
-                    } else {
-                        nickname = "Anonymous";
-                        color = generateRandomColor(); // Generate random color if not set
-                        set(userRef, { nickname, color });
                     }
                 });
 
@@ -249,7 +245,18 @@
                     const messageData = data.val();
                     const messageElement = document.createElement('div');
                     messageElement.classList.add('message');
-                    messageElement.innerHTML = `<span class="nickname" style="color: ${messageData.color}">${messageData.nickname}</span>: ${messageData.text}`;
+
+                    // Add rainbow effect to nickname
+                    const nicknameSpan = document.createElement('span');
+                    nicknameSpan.classList.add('nickname');
+                    if (adminUIDs.includes(messageData.uid)) {
+                        nicknameSpan.classList.add('rainbow'); // Add rainbow effect for admins
+                    }
+                    nicknameSpan.style.color = messageData.color;
+                    nicknameSpan.innerText = messageData.nickname;
+
+                    messageElement.appendChild(nicknameSpan);
+                    messageElement.innerHTML += ": " + messageData.text;
                     messagesDiv.appendChild(messageElement);
 
                     // Play sound when a new message is received
@@ -344,7 +351,7 @@
             }
 
             // Cleanup old messages every minute
-            setInterval(cleanupMessages, 3600 * 1000);
+            setInterval(cleanupMessages, 60 * 1000);
 
             async function cleanupMessages() {
                 const snapshot = await get(messagesRef);
@@ -360,8 +367,6 @@
     </script>
 </body>
 </html>
-
-
 
 
 
