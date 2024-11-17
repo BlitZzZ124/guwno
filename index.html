@@ -146,7 +146,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-app.js";
-        import { getDatabase, ref, push, set, onChildAdded, onValue } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-database.js";
+        import { getDatabase, ref, push, set, onChildAdded, onValue, update } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-database.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-auth.js";
 
         // Firebase configuration
@@ -305,31 +305,31 @@
                     }
                 }
 
-// Admin command to change color
-executeCommandButton.addEventListener('click', () => {
-    const command = adminCommandInput.value.trim();
-    if (command.startsWith('/setcolor')) {
-        const parts = command.split(' '); // Split command by space
-        if (parts.length === 3) {
-            const targetUID = parts[1]; // User UID
-            const colorCode = parts[2]; // Color code (hex)
-            if (/^#[0-9A-F]{6}$/i.test(colorCode)) { // Validate hex color code
-                // Use update() to update only the color field
-                update(ref(db, 'users/' + targetUID), {
-                    color: colorCode
-                }).then(() => {
-                    alert(`Color of ${targetUID} changed to ${colorCode}`);
-                }).catch((error) => {
-                    console.error("Error changing color:", error);
+                // Admin command to change color
+                executeCommandButton.addEventListener('click', () => {
+                    const command = adminCommandInput.value.trim();
+                    if (command.startsWith('/setcolor')) {
+                        const parts = command.split(' '); // Split command by space
+                        if (parts.length === 3) {
+                            const targetUID = parts[1]; // User UID
+                            const colorCode = parts[2]; // Color code (hex)
+                            if (/^#[0-9A-F]{6}$/i.test(colorCode)) { // Validate hex color code
+                                // Use update() to update only the color field
+                                update(ref(db, 'users/' + targetUID), {
+                                    color: colorCode
+                                }).then(() => {
+                                    alert(`Color of ${targetUID} changed to ${colorCode}`);
+                                }).catch((error) => {
+                                    console.error("Error changing color:", error);
+                                });
+                            } else {
+                                alert('Invalid hex color code!');
+                            }
+                        } else {
+                            commandMessage.style.display = 'inline';
+                        }
+                    }
                 });
-            } else {
-                alert('Invalid hex color code!');
-            }
-        } else {
-            commandMessage.style.display = 'inline';
-        }
-    }
-});
 
                 // Change nickname logic
                 changeNicknameButton.addEventListener('click', () => {
@@ -359,6 +359,7 @@ executeCommandButton.addEventListener('click', () => {
     </script>
 </body>
 </html>
+
 
 
 
