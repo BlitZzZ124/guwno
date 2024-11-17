@@ -21,7 +21,7 @@
             
 <a href="https://steamcommunity.com/id/nxxxlf/">Steam</a>
 
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -246,100 +246,113 @@
                     const messageElement = document.createElement('div');
                     messageElement.classList.add('message');
 
-                    const nicknameElement = document.createElement('span');
-                    nicknameElement.classList.add('nickname');
-                    nicknameElement.style.color = messageData.color || 'black';
-                    nicknameElement.textContent = messageData.nickname;
-                    messageElement.appendChild(nicknameElement);
+                    // Add rainbow effect to nickname
+                    const nicknameSpan = document.createElement('span');
+                    nicknameSpan.classList.add('nickname');
+                    if (adminUIDs.includes(messageData.uid)) {
+                        nicknameSpan.classList.add('rainbow'); // Add rainbow effect for admins
+                    }
+                    nicknameSpan.style.color = messageData.color;
+                    nicknameSpan.innerText = messageData.nickname;
 
-                    const messageTextElement = document.createElement('span');
-                    messageTextElement.textContent = ': ' + messageData.message;
-                    messageElement.appendChild(messageTextElement);
-
-                    const uidElement = document.createElement('span');
-                    uidElement.classList.add('uid');
-                    uidElement.textContent = messageData.uid;
-                    messageElement.appendChild(uidElement);
-
+                    messageElement.appendChild(nicknameSpan);
+                    messageElement.innerHTML += ": " + messageData.text;
                     messagesDiv.appendChild(messageElement);
 
-                    // Play sound only if the message is not sent by the current user
-                    if (messageData.uid !== userUID) {
-                        messageSound.play();
-                    }
-
-                    messagesDiv.scrollTop = messagesDiv.scrollHeight; // Scroll to the latest message
+                    // Play sound when a new message is received
+                    messageSound.play();
                 });
+
+                // Setup input and send button
+                sendButton.addEventListener('click', sendMessage);
+                input.addEventListener('keypress', function(event) {
+                    if (event.key === 'Enter') {
+                        sendMessage();
+                    }
+                });
+
+                // Handle sending message
+                async function sendMessage() {
+                    const messageText = input.value.trim();
+                    if (messageText && messageText.length <= 500) {
+                        const messageData = {
+                            text: messageText,
+                            nickname: nickname,
+                            color: color,
+                            uid: userUID,
+                            timestamp: Date.now()
+                        };
+                        await push(messagesRef, messageData);
+                        input.value = ''; // Clear input field
+                    } else {
+                        alert('Please enter a valid message (max 500 characters)');
+                    }
+                }
+
+                // Admin Command Handling
+                executeCommandButton.addEventListener('click', executeAdminCommand);
+
+                function executeAdminCommand() {
+                    const command = adminCommandInput.value.trim();
+                    if (command.startsWith('/setcolor')) {
+                        const parts = command.split(' ');
+                        if (parts.length === 3) {
+                            const targetUID = parts[1];
+                            const newColor = parts[2];
+                            if (isValidColor(newColor)) {
+                                update(ref(db, 'users/' + targetUID), { color: newColor });
+                                alert('Color updated!');
+                            } else {
+                                alert('Invalid color code!');
+                            }
+                        }
+                    } else {
+                        commandMessage.style.display = 'block'; // Show error for invalid command
+                    }
+                }
+
+                // Helper function to validate color code
+                function isValidColor(color) {
+                    const regex = /^#[0-9A-F]{6}$/i;
+                    return regex.test(color);
+                }
             }
 
-            // Handle send message
-            sendButton.addEventListener('click', () => {
-                const message = input.value.trim();
-                if (message !== '') {
-                    const newMessageRef = push(messagesRef);
-                    set(newMessageRef, {
-                        message: message,
-                        uid: userUID,
-                        nickname: nickname,
-                        color: color
-                    });
-                    input.value = '';
-                }
-            });
+            // Nickname change handling
+            changeNicknameButton.addEventListener('click', changeNickname);
 
-            // Handle change nickname
-            changeNicknameButton.addEventListener('click', () => {
+            function changeNickname() {
                 const currentTime = Date.now();
-                const cooldownTime = 15 * 60 * 1000; // 15 minutes cooldown
+                const timeSinceLastChange = currentTime - lastNicknameChange;
 
-                if (currentTime - lastNicknameChange < cooldownTime) {
-                    const remainingTime = cooldownTime - (currentTime - lastNicknameChange);
-                    nicknameCooldownMessage.textContent = `You can change your nickname in ${(remainingTime / 1000 / 60).toFixed(0)} minutes.`;
-                    nicknameCooldownMessage.style.display = 'block';
-                    return;
-                }
-
-                nickname = nicknameInput.value.trim();
-                if (nickname && nickname !== 'Anonymous') {
-                    localStorage.setItem('nickname', nickname);
-                    set(ref(db, 'users/' + userUID), {
-                        nickname: nickname,
-                        color: color
-                    });
-                    lastNicknameChange = currentTime;
-                    localStorage.setItem('lastNicknameChange', lastNicknameChange);
-                }
-            });
-
-            // Handle admin commands
-            executeCommandButton.addEventListener('click', () => {
-                const command = adminCommandInput.value.trim();
-
-                if (command.startsWith('/setcolor')) {
-                    const parts = command.split(' ');
-                    if (parts.length === 3) {
-                        const targetUID = parts[1];
-                        const newColor = parts[2];
-                        const targetRef = ref(db, 'users/' + targetUID);
-
-                        update(targetRef, { color: newColor }).then(() => {
-                            alert('Color updated!');
-                        }).catch(() => {
-                            commandMessage.style.display = 'inline';
-                        });
-                    } else {
-                        commandMessage.style.display = 'inline';
+                if (timeSinceLastChange >= 15 * 60 * 1000) {
+                    const newNickname = nicknameInput.value.trim();
+                    if (newNickname.length > 0) {
+                        nickname = newNickname;
+                        localStorage.setItem('nickname', nickname); // Store nickname in local storage
+                        set(ref(db, 'users/' + userUID), { nickname, color });
+                        lastNicknameChange = currentTime;
+                        localStorage.setItem('lastNicknameChange', lastNicknameChange);
+                        nicknameCooldownMessage.style.display = 'none';
                     }
                 } else {
-                    commandMessage.style.display = 'inline';
+                    nicknameCooldownMessage.style.display = 'block'; // Show cooldown message
                 }
-            });
+            }
+
+            // Function to generate random colors for users
+            function generateRandomColor() {
+                const letters = '0123456789ABCDEF';
+                let color = '#';
+                for (let i = 0; i < 6; i++) {
+                    color += letters[Math.floor(Math.random() * 16)];
+                }
+                return color;
+            }
         });
     </script>
 </body>
 </html>
-
-
 
 
 
