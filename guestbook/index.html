@@ -107,89 +107,62 @@
             margin: 5px;
         }
     </style>
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js"></script>
-</head>
-<body>
-    <h1>Welcome to the Guestbook!</h1>
-
-    <div class="guestbook-container">
-        <div class="form-container">
-            <label for="name">Your Name</label>
-            <input type="text" id="name" placeholder="Enter your name" required>
-
-            <label for="message">Your Message</label>
-            <textarea id="message" placeholder="Write your message here..." rows="5" required></textarea>
-
-            <button id="submit-button">Submit</button>
-        </div>
-
-        <div class="guestbook-messages" id="guestbook-messages">
-            <!-- Messages will be displayed here -->
-        </div>
-
-        <!-- Emoji Picker (Hidden by default) -->
-        <div id="emoji-picker">
-            <img src="https://twemoji.maxcdn.com/v/13.1.0/72x72/1f600.png" alt="grinning face" class="emoji">
-            <img src="https://twemoji.maxcdn.com/v/13.1.0/72x72/1f609.png" alt="winking face" class="emoji">
-            <img src="https://twemoji.maxcdn.com/v/13.1.0/72x72/1f61c.png" alt="stuck-out tongue winking eye" class="emoji">
-            <img src="https://twemoji.maxcdn.com/v/13.1.0/72x72/1f62d.png" alt="tears of joy" class="emoji">
-            <img src="https://twemoji.maxcdn.com/v/13.1.0/72x72/1f60d.png" alt="heart eyes" class="emoji">
-        </div>
-    </div>
-
-    <script>
+    <!-- Firebase SDK (Modular Approach) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
+        
         // Firebase configuration
         const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_AUTH_DOMAIN",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_STORAGE_BUCKET",
-            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-            appId: "YOUR_APP_ID",
-            measurementId: "YOUR_MEASUREMENT_ID"
+  apiKey: "AIzaSyAYsvRx0T4FAs-w4PRAlHKGrY1kVPXq_os",
+  authDomain: "guest-86e27.firebaseapp.com",
+  projectId: "guest-86e27",
+  storageBucket: "guest-86e27.firebasestorage.app",
+  messagingSenderId: "998302297765",
+  appId: "1:998302297765:web:cc794d0f29788ebd9de74c",
+  measurementId: "G-3XBN76ZDGP"
+
         };
 
         // Initialize Firebase
-        const app = firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
 
         // Load existing guestbook messages from Firebase Firestore
-        function loadMessages() {
+        async function loadMessages() {
             const guestbookMessagesContainer = document.getElementById('guestbook-messages');
             guestbookMessagesContainer.innerHTML = ''; // Clear existing messages
 
-            db.collection('messages').orderBy('timestamp', 'desc').get()
-                .then((querySnapshot) => {
-                    querySnapshot.forEach((doc) => {
-                        const messageData = doc.data();
-                        const messageElement = document.createElement('div');
-                        messageElement.classList.add('message');
-                        messageElement.innerHTML = `
-                            <div class="name">${messageData.name} <span class="timestamp">${messageData.timestamp.toDate().toLocaleString()}</span></div>
-                            <div class="text">${messageData.text}</div>
-                        `;
-                        guestbookMessagesContainer.appendChild(messageElement);
-                    });
-                })
-                .catch((error) => {
-                    console.error("Error getting messages: ", error);
+            try {
+                const q = query(collection(db, 'messages'), orderBy('timestamp', 'desc'));
+                const querySnapshot = await getDocs(q);
+                querySnapshot.forEach((doc) => {
+                    const messageData = doc.data();
+                    const messageElement = document.createElement('div');
+                    messageElement.classList.add('message');
+                    messageElement.innerHTML = `
+                        <div class="name">${messageData.name} <span class="timestamp">${messageData.timestamp.toDate().toLocaleString()}</span></div>
+                        <div class="text">${messageData.text}</div>
+                    `;
+                    guestbookMessagesContainer.appendChild(messageElement);
                 });
+            } catch (error) {
+                console.error("Error getting messages: ", error);
+            }
         }
 
         // Save new message to Firebase Firestore
-        function saveMessage(name, text) {
-            const timestamp = firebase.firestore.FieldValue.serverTimestamp();
-            db.collection('messages').add({
-                name,
-                text,
-                timestamp
-            }).then(() => {
+        async function saveMessage(name, text) {
+            try {
+                const docRef = await addDoc(collection(db, "messages"), {
+                    name,
+                    text,
+                    timestamp: new Date()
+                });
                 loadMessages(); // Reload messages
-            }).catch((error) => {
+            } catch (error) {
                 console.error("Error adding message: ", error);
-            });
+            }
         }
 
         // Submit form handler
@@ -224,5 +197,33 @@
         // Load messages when the page is loaded
         window.onload = loadMessages;
     </script>
+</head>
+<body>
+    <h1>Welcome to the Guestbook!</h1>
+
+    <div class="guestbook-container">
+        <div class="form-container">
+            <label for="name">Your Name</label>
+            <input type="text" id="name" placeholder="Enter your name" required>
+
+            <label for="message">Your Message</label>
+            <textarea id="message" placeholder="Write your message here..." rows="5" required></textarea>
+
+            <button id="submit-button">Submit</button>
+        </div>
+
+        <div class="guestbook-messages" id="guestbook-messages">
+            <!-- Messages will be displayed here -->
+        </div>
+
+        <!-- Emoji Picker (Hidden by default) -->
+        <div id="emoji-picker">
+            <img src="https://twemoji.maxcdn.com/v/13.1.0/72x72/1f600.png" alt="grinning face" class="emoji">
+            <img src="https://twemoji.maxcdn.com/v/13.1.0/72x72/1f609.png" alt="winking face" class="emoji">
+            <img src="https://twemoji.maxcdn.com/v/13.1.0/72x72/1f61c.png" alt="stuck-out tongue winking eye" class="emoji">
+            <img src="https://twemoji.maxcdn.com/v/13.1.0/72x72/1f62d.png" alt="tears of joy" class="emoji">
+            <img src="https://twemoji.maxcdn.com/v/13.1.0/72x72/1f60d.png" alt="heart eyes" class="emoji">
+        </div>
+    </div>
 </body>
 </html>
