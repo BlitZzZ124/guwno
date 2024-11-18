@@ -82,71 +82,34 @@
             cursor: pointer;
         }
 
-        .uid {
-            font-size: 0.8em;
-            color: #888;
-        }
-
         .time {
             font-size: 0.8em;
             color: #555;
         }
 
-        .thumbnail {
+        .image-message {
             max-width: 100px;
             max-height: 100px;
             cursor: pointer;
-            border: 1px solid #ccc;
-            margin-top: 5px;
+            margin: 5px 0;
         }
 
-        #fullscreenImage {
-            display: none;
+        .fullscreen {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.9);
-            z-index: 1000;
-            justify-content: center;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
             align-items: center;
+            justify-content: center;
+            z-index: 999;
         }
 
-        #fullscreenImage img {
+        .fullscreen img {
             max-width: 90%;
             max-height: 90%;
-        }
-
-        #fullscreenImage button {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: white;
-            border: none;
-            padding: 10px;
-            cursor: pointer;
-        }
-
-        #nickname-container {
-            margin-bottom: 10px;
-        }
-
-        .rainbow {
-            font-weight: bold;
-            color: #fff;
-            animation: rainbowAnimation 5s linear infinite;
-        }
-
-        @keyframes rainbowAnimation {
-            0% { color: red; }
-            14% { color: orange; }
-            28% { color: yellow; }
-            42% { color: green; }
-            57% { color: cyan; }
-            71% { color: blue; }
-            85% { color: violet; }
-            100% { color: red; }
         }
     </style>
 </head>
@@ -158,119 +121,144 @@
             <input id="message" type="text" placeholder="Type a message (max 500 characters)">
             <button id="sendButton">Send</button>
         </div>
-
-        <div id="nickname-container">
-            <label for="nickname">Nickname:</label>
-            <input id="nickname" type="text" placeholder="Enter your nickname">
-            <button id="changeNicknameButton">Change Nickname</button>
-            <span id="nicknameCooldownMessage" style="color: red; font-size: 0.9em; display: none;">You can change your nickname in 15 minutes.</span>
-        </div>
-
-        <div id="adminCommandContainer">
-            <label for="adminCommand">Admin Command:</label>
-            <input id="adminCommand" type="text" placeholder="Enter command (e.g., /setcolor userUID #ff5733)">
-            <button id="executeCommandButton">Execute Command</button>
-            <span id="commandMessage" style="color: red; font-size: 0.9em; display: none;">Invalid command!</span>
-        </div>
-    </div>
-
-    <!-- Fullscreen Image View -->
-    <div id="fullscreenImage">
-        <img src="" alt="Fullscreen">
-        <button onclick="closeFullscreen()">Close</button>
     </div>
 
     <audio id="messageSound" src="https://raw.githubusercontent.com/BlitZzZ124/guwno/main/gg.wav" preload="auto"></audio>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-app.js";
-        import { getDatabase, ref, push, set, onChildAdded, onValue, update } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-database.js";
+        import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-database.js";
+        import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-auth.js";
 
-        const firebaseConfig = { /* Your Firebase Config */ };
+        const firebaseConfig = {
+            apiKey: "AIzaSyCk8jPJpt_83lhgl1j2R3_tLK776wyodpA",
+            authDomain: "chat-85d04.firebaseapp.com",
+            databaseURL: "https://chat-85d04-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "chat-85d04",
+            storageBucket: "chat-85d04.appspot.com",
+            messagingSenderId: "1067572204091",
+            appId: "1:1067572204091:web:11f459b6760c4a4dcec21e",
+            measurementId: "G-PHPR2T1DNJ"
+        };
+
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
+        const auth = getAuth(app);
 
-        document.addEventListener("DOMContentLoaded", async () => {
-            const messagesRef = ref(db, 'messages');
-            const messagesDiv = document.getElementById('messages');
-            const input = document.getElementById('message');
-            const sendButton = document.getElementById('sendButton');
-            const messageSound = document.getElementById('messageSound');
+        const messagesRef = ref(db, 'messages');
+        const messagesDiv = document.getElementById('messages');
+        const input = document.getElementById('message');
+        const sendButton = document.getElementById('sendButton');
+        const messageSound = document.getElementById('messageSound');
+
+        let userUID = null;
+        let nickname = "Anonymous";
+
+        document.addEventListener("DOMContentLoaded", () => {
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    userUID = user.uid;
+                    loadChat();
+                } else {
+                    await authenticateUser();
+                }
+            });
+        });
+
+        async function authenticateUser() {
+            const email = prompt('Enter your email:');
+            const password = prompt('Enter your password:');
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                userUID = userCredential.user.uid;
+                loadChat();
+            } catch (error) {
+                try {
+                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                    userUID = userCredential.user.uid;
+                    loadChat();
+                } catch (error) {
+                    alert('Error: ' + error.message);
+                }
+            }
+        }
+
+        function loadChat() {
+            onChildAdded(messagesRef, (data) => {
+                const messageData = data.val();
+                const messageElement = createMessageElement(messageData);
+                messagesDiv.appendChild(messageElement);
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                if (messageData.uid !== userUID) {
+                    messageSound.play();
+                }
+            });
 
             sendButton.addEventListener('click', sendMessage);
             input.addEventListener('keypress', (event) => {
                 if (event.key === 'Enter') sendMessage();
             });
+        }
 
-            onChildAdded(messagesRef, (data) => {
-                const messageData = data.val();
-                const messageElement = document.createElement('div');
-                messageElement.classList.add('message');
+        async function sendMessage() {
+            const messageText = input.value.trim();
+            if (messageText && messageText.length <= 500) {
+                const messageData = {
+                    text: messageText,
+                    nickname,
+                    uid: userUID,
+                    timestamp: Date.now()
+                };
+                await push(messagesRef, messageData);
+                input.value = '';
+            } else {
+                alert('Please enter a valid message (max 500 characters)');
+            }
+        }
 
-                const nicknameSpan = document.createElement('span');
-                nicknameSpan.classList.add('nickname');
-                nicknameSpan.textContent = messageData.nickname;
-                nicknameSpan.style.color = messageData.color || '#000';
+        function createMessageElement(messageData) {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message');
 
+            const nicknameSpan = document.createElement('span');
+            nicknameSpan.textContent = messageData.nickname + ': ';
+            messageElement.appendChild(nicknameSpan);
+
+            if (isImageUrl(messageData.text)) {
+                const img = document.createElement('img');
+                img.src = messageData.text;
+                img.classList.add('image-message');
+                img.onclick = () => openFullscreen(img.src);
+                messageElement.appendChild(img);
+            } else {
                 const textSpan = document.createElement('span');
-                textSpan.textContent = `: ${messageData.text}`;
-
-                const timestamp = new Date(messageData.timestamp);
-                const timeSpan = document.createElement('span');
-                timeSpan.classList.add('time');
-                timeSpan.textContent = ` (${timestamp.getHours()}:${String(timestamp.getMinutes()).padStart(2, '0')})`;
-
-                messageElement.appendChild(nicknameSpan);
-
-                if (isImageUrl(messageData.text)) {
-                    const img = document.createElement('img');
-                    img.src = messageData.text;
-                    img.classList.add('thumbnail');
-                    img.addEventListener('click', () => openFullscreen(img.src));
-                    messageElement.appendChild(img);
-                } else {
-                    messageElement.appendChild(textSpan);
-                }
-
-                messageElement.appendChild(timeSpan);
-                messagesDiv.appendChild(messageElement);
-                messagesDiv.scrollTop = messagesDiv.scrollHeight;
-            });
-
-            async function sendMessage() {
-                const messageText = input.value.trim();
-                if (messageText.length <= 500) {
-                    const messageData = {
-                        text: messageText,
-                        nickname: 'Anonymous', // Replace with your logic for nickname
-                        color: '#000000', // Replace with your logic for color
-                        uid: 'someUID', // Replace with logic for UID
-                        timestamp: Date.now(),
-                    };
-                    await push(messagesRef, messageData);
-                    input.value = '';
-                }
+                textSpan.textContent = messageData.text;
+                messageElement.appendChild(textSpan);
             }
 
-            function isImageUrl(url) {
-                return /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
-            }
+            return messageElement;
+        }
 
-            window.openFullscreen = (src) => {
-                const fullscreenDiv = document.getElementById('fullscreenImage');
-                const fullscreenImg = fullscreenDiv.querySelector('img');
-                fullscreenImg.src = src;
-                fullscreenDiv.style.display = 'flex';
-            };
+        function isImageUrl(url) {
+            const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp'];
+            return imageExtensions.some(ext => url.endsWith(ext));
+        }
 
-            window.closeFullscreen = () => {
-                const fullscreenDiv = document.getElementById('fullscreenImage');
-                fullscreenDiv.style.display = 'none';
-            };
-        });
+        function openFullscreen(imageSrc) {
+            const fullscreenDiv = document.createElement('div');
+            fullscreenDiv.classList.add('fullscreen');
+            fullscreenDiv.onclick = () => document.body.removeChild(fullscreenDiv);
+
+            const img = document.createElement('img');
+            img.src = imageSrc;
+            fullscreenDiv.appendChild(img);
+
+            document.body.appendChild(fullscreenDiv);
+        }
     </script>
 </body>
 </html>
+
 
 
 
