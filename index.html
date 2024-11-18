@@ -113,6 +113,43 @@
             85% { color: violet; }
             100% { color: red; }
         }
+
+        /* Styling for image previews */
+        .image-preview {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            cursor: pointer;
+            border-radius: 10px;
+            margin-left: 10px;
+        }
+
+        /* Fullscreen image modal */
+        #fullscreenImageModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            justify-content: center;
+            align-items: center;
+        }
+
+        #fullscreenImage {
+            max-width: 90%;
+            max-height: 90%;
+        }
+
+        #closeModal {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -139,6 +176,12 @@
             <button id="executeCommandButton">Execute Command</button>
             <span id="commandMessage" style="color: red; font-size: 0.9em; display: none;">Invalid command!</span>
         </div>
+    </div>
+
+    <!-- Fullscreen Image Modal -->
+    <div id="fullscreenImageModal">
+        <img id="fullscreenImage" src="" alt="Fullscreen Image">
+        <span id="closeModal">&times;</span>
     </div>
 
     <!-- Audio element to play sound -->
@@ -210,168 +253,139 @@
                         localStorage.setItem('userUID', userUID); // Store UID locally
                         loadChat();
                     } catch (error) {
-                        alert('Error: ' + error.message);
+                        console.error(error.message);
                     }
                 }
             }
 
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    userUID = user.uid;
-                    loadChat();
-                } else {
-                    handleAuth();
+            // Load the chat and nickname
+            function loadChat() {
+                if (localStorage.getItem('nickname')) {
+                    nickname = localStorage.getItem('nickname');
+                    nicknameInput.value = nickname;
+                }
+
+                if (userUID) {
+                    // Display the messages and watch for new ones
+                    onChildAdded(messagesRef, (data) => {
+                        const message = data.val();
+                        const messageElement = document.createElement('div');
+                        messageElement.classList.add('message');
+                        
+                        const nicknameElement = document.createElement('span');
+                        nicknameElement.classList.add('nickname');
+                        nicknameElement.textContent = message.nickname || "Anonymous";
+                        nicknameElement.style.color = message.color || "#000000";
+                        
+                        // Check if the nickname is admin and apply rainbow effect
+                        if (adminUIDs.includes(message.uid)) {
+                            nicknameElement.classList.add('rainbow');
+                        }
+
+                        const timeElement = document.createElement('span');
+                        timeElement.classList.add('time');
+                        timeElement.textContent = message.time;
+                        
+                        const messageContentElement = document.createElement('span');
+                        messageContentElement.textContent = message.text;
+                        
+                        // Check if the message contains an image
+                        const imageRegex = /(https?:\/\/(?:www\.)?imgur\.com\/(?:[a-zA-Z0-9_-]+)\.(?:jpg|jpeg|png|gif))/;
+                        if (imageRegex.test(message.text)) {
+                            const imageURL = message.text.match(imageRegex)[0];
+                            const imgElement = document.createElement('img');
+                            imgElement.src = imageURL;
+                            imgElement.alt = 'Image Preview';
+                            imgElement.classList.add('image-preview');
+                            imgElement.addEventListener('click', () => {
+                                showFullscreenImage(imageURL);
+                            });
+                            messageContentElement.appendChild(imgElement);
+                        }
+
+                        // Appending message
+                        messageElement.appendChild(nicknameElement);
+                        messageElement.appendChild(timeElement);
+                        messageElement.appendChild(messageContentElement);
+                        messagesDiv.appendChild(messageElement);
+                    });
+
+                    // Check for admin commands input
+                    executeCommandButton.addEventListener('click', () => {
+                        const command = adminCommandInput.value.trim();
+                        if (command.startsWith('/setcolor')) {
+                            // Example: /setcolor userUID #ff5733
+                            const parts = command.split(' ');
+                            const targetUID = parts[1];
+                            const colorCode = parts[2];
+                            if (targetUID && colorCode) {
+                                update(ref(db, 'users/' + targetUID), {
+                                    color: colorCode
+                                });
+                            } else {
+                                commandMessage.style.display = 'block';
+                            }
+                        } else {
+                            commandMessage.style.display = 'block';
+                        }
+                    });
+                }
+            }
+
+            // Show fullscreen image
+            function showFullscreenImage(imageURL) {
+                const modal = document.getElementById('fullscreenImageModal');
+                const fullscreenImage = document.getElementById('fullscreenImage');
+                fullscreenImage.src = imageURL;
+                modal.style.display = 'flex';
+            }
+
+            // Close fullscreen image modal
+            document.getElementById('closeModal').addEventListener('click', () => {
+                document.getElementById('fullscreenImageModal').style.display = 'none';
+            });
+
+            // Event listeners for sending messages
+            sendButton.addEventListener('click', () => {
+                const messageText = input.value.trim();
+                if (messageText.length > 0) {
+                    const newMessage = {
+                        text: messageText,
+                        nickname: nickname,
+                        uid: userUID,
+                        time: new Date().toLocaleString(),
+                        color: color
+                    };
+                    push(messagesRef, newMessage); // Push new message to Firebase
+                    input.value = ''; // Clear input field
+                    messageSound.play(); // Play sound on new message
                 }
             });
 
-            // Function to load chat after authentication
-            function loadChat() {
-                nickname = localStorage.getItem('nickname') || 'Anonymous';
-                nicknameInput.value = nickname;
-
-                // Retrieve user's nickname and color from Firebase if they exist
-                const userRef = ref(db, 'users/' + userUID);
-                onValue(userRef, (snapshot) => {
-                    const data = snapshot.val();
-                    if (data) {
-                        nickname = data.nickname;
-                        color = data.color; // Retrieve color from Firebase
-                        nicknameInput.value = nickname;
-                    }
-                });
-
-                // Listen for new messages
-                onChildAdded(messagesRef, (data) => {
-                    const messageData = data.val();
-                    const messageElement = document.createElement('div');
-                    messageElement.classList.add('message');
-
-                    // Add rainbow effect to nickname for all messages
-                    const nicknameSpan = document.createElement('span');
-                    nicknameSpan.classList.add('nickname');
-                    nicknameSpan.title = messageData.uid; // Set UID as title for tooltip
-                    if (adminUIDs.includes(messageData.uid)) {
-                        nicknameSpan.classList.add('rainbow'); // Apply rainbow effect
-                    } else {
-                        nicknameSpan.style.color = messageData.color || 'black'; // Apply custom color for non-admins
-                    }
-                    nicknameSpan.textContent = messageData.nickname;
-
-                    // Add message text
-                    const textSpan = document.createElement('span');
-                    textSpan.textContent = ': ' + messageData.text;
-
-                    // Add timestamp next to the message in smaller font and without seconds
-                    const timestamp = new Date(messageData.timestamp);
-                    const timeSpan = document.createElement('span');
-                    timeSpan.classList.add('time');
-                    timeSpan.textContent = ` (${timestamp.getHours()}:${timestamp.getMinutes().toString().padStart(2, '0')})`; // Only hours and minutes
-                    textSpan.appendChild(timeSpan);
-
-                    messageElement.appendChild(nicknameSpan);
-                    messageElement.appendChild(textSpan);
-
-                    // Check if the sender is not the current user, play sound
-                    if (messageData.uid !== userUID) {
-                        messageSound.play();
-                    }
-
-                    messagesDiv.appendChild(messageElement);
-
-                    // Auto scroll the chatbox down when a new message is added
-                    messagesDiv.scrollTop = messagesDiv.scrollHeight;
-                });
-
-                // Setup input and send button
-                sendButton.addEventListener('click', sendMessage);
-                input.addEventListener('keypress', function(event) {
-                    if (event.key === 'Enter') {
-                        sendMessage();
-                    }
-                });
-
-                // Handle sending message
-                async function sendMessage() {
-                    const messageText = input.value.trim();
-                    if (messageText && messageText.length <= 500) {
-                        const messageData = {
-                            text: messageText,
-                            nickname: nickname,
-                            color: color,
-                            uid: userUID,
-                            timestamp: Date.now()
-                        };
-                        await push(messagesRef, messageData);
-                        input.value = ''; // Clear input field
-                    } else {
-                        alert('Please enter a valid message (max 500 characters)');
-                    }
-                }
-
-                // Admin Command Handling
-                executeCommandButton.addEventListener('click', executeAdminCommand);
-
-                function executeAdminCommand() {
-                    const command = adminCommandInput.value.trim();
-                    if (command.startsWith('/setcolor')) {
-                        const parts = command.split(' ');
-                        if (parts.length === 3) {
-                            const targetUID = parts[1];
-                            const newColor = parts[2];
-                            if (isValidColor(newColor)) {
-                                update(ref(db, 'users/' + targetUID), { color: newColor });
-                                alert('Color updated!');
-                            } else {
-                                alert('Invalid color code!');
-                            }
-                        }
-                    } else {
-                        commandMessage.style.display = 'block'; // Show error for invalid command
-                    }
-                }
-
-                // Helper function to validate color code
-                function isValidColor(color) {
-                    const regex = /^#[0-9A-F]{6}$/i;
-                    return regex.test(color);
-                }
-            }
-
-            // Nickname change handling
-            changeNicknameButton.addEventListener('click', changeNickname);
-
-            function changeNickname() {
+            // Event listener for nickname change
+            changeNicknameButton.addEventListener('click', () => {
                 const currentTime = Date.now();
-                const timeSinceLastChange = currentTime - lastNicknameChange;
+                const cooldown = 15 * 60 * 1000; // 15 minutes in milliseconds
 
-                if (timeSinceLastChange >= 15 * 60 * 1000) {
-                    const newNickname = nicknameInput.value.trim();
-                    if (newNickname.length > 0) {
-                        nickname = newNickname;
-                        localStorage.setItem('nickname', nickname); // Store nickname in local storage
-                        set(ref(db, 'users/' + userUID), { nickname, color });
-                        lastNicknameChange = currentTime;
-                        localStorage.setItem('lastNicknameChange', lastNicknameChange);
-                        nicknameCooldownMessage.style.display = 'none';
-                    }
+                if (currentTime - lastNicknameChange >= cooldown) {
+                    nickname = nicknameInput.value.trim() || "Anonymous";
+                    localStorage.setItem('nickname', nickname); // Save nickname in localStorage
+                    localStorage.setItem('lastNicknameChange', currentTime); // Store the current time
+
+                    // Reset cooldown message
+                    nicknameCooldownMessage.style.display = 'none';
                 } else {
-                    nicknameCooldownMessage.style.display = 'block'; // Show cooldown message
+                    nicknameCooldownMessage.style.display = 'block';
                 }
-            }
+            });
 
-            // Function to generate random colors for users
-            function generateRandomColor() {
-                const letters = '0123456789ABCDEF';
-                let color = '#';
-                for (let i = 0; i < 6; i++) {
-                    color += letters[Math.floor(Math.random() * 16)];
-                }
-                return color;
-            }
+            // Initialize chat
+            handleAuth();
         });
     </script>
 </body>
 </html>
+
 
 
 
