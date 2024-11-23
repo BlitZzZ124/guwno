@@ -359,6 +359,36 @@
                 }
             }
 
+          
+          function changeNickname() {
+    const currentTime = Date.now();
+    const timeSinceLastChange = currentTime - lastNicknameChange;
+
+    if (timeSinceLastChange >= 15 * 60 * 1000) { // 15-minute cooldown
+        const newNickname = nicknameInput.value.trim();
+
+        if (newNickname.length > 0) {
+            // Restrict "nevelose" to your UID only
+            if (newNickname.toLowerCase() === "nevelose" && userUID !== "6mu1HqthUdT9s0VVIA6OxPpa0WD2") {
+                alert("You are not allowed to use this nickname.");
+                return;
+            }
+
+            nickname = newNickname;
+            localStorage.setItem('nickname', nickname); // Store nickname in local storage
+            set(ref(db, 'users/' + userUID), { nickname, color });
+            lastNicknameChange = currentTime;
+            localStorage.setItem('lastNicknameChange', lastNicknameChange);
+            nicknameCooldownMessage.style.display = 'none';
+        }
+    } else {
+        nicknameCooldownMessage.style.display = 'block'; // Show cooldown message
+    }
+}
+
+
+
+          
             // Function to generate random colors for users
             function generateRandomColor() {
                 const letters = '0123456789ABCDEF';
