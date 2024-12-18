@@ -63,7 +63,7 @@ const playPauseSong = ()=> {
     playPauseIcon.className = 'ph-bold ph-play';
   }
 }
-// Seecting progress bar elements
+// Selecting progress bar elements
 const progressBar = document.getElementById('progress-bar');
 const progressContainer = document.querySelector('.progress-container');
 
@@ -84,4 +84,29 @@ function setProgress(e) {
   const clickX = e.offsetX;
   const duration = currentSong.duration;
   currentSong.currentTime = (clickX / width) * duration;
+}
+// Selecting time display elements
+const currentTimeEl = document.getElementById('current-time');
+const durationEl = document.getElementById('duration');
+
+// Update time display as the song plays
+currentSong.addEventListener('loadedmetadata', updateDuration);
+currentSong.addEventListener('timeupdate', updateProgress);
+
+function updateProgress() {
+  const { currentTime, duration } = currentSong;
+  const progressPercent = (currentTime / duration) * 100;
+  progressBar.style.width = `${progressPercent}%`;
+  currentTimeEl.textContent = formatTime(currentTime);
+}
+
+function updateDuration() {
+  durationEl.textContent = formatTime(currentSong.duration);
+}
+
+// Format time in minutes:seconds
+function formatTime(time) {
+  const minutes = Math.floor(time / 60);
+  const seconds = Math.floor(time % 60);
+  return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
 }

@@ -40,3 +40,10 @@ body {
   border-radius: 5px;
   transition: width 0.1s linear;
 }
+.time-display {
+  text-align: center;
+  margin-top: 5px;
+  font-size: 14px;
+  color: white;
+  font-family: sans-serif;
+}
