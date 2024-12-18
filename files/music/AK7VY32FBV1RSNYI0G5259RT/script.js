@@ -63,7 +63,7 @@ const playPauseSong = ()=> {
     playPauseIcon.className = 'ph-bold ph-play';
   }
 }
-// Selecting progress bar elements
+// Seecting progress bar elements
 const progressBar = document.getElementById('progress-bar');
 const progressContainer = document.querySelector('.progress-container');
 
