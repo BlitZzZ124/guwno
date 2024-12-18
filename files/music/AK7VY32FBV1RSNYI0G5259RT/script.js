@@ -63,3 +63,25 @@ const playPauseSong = ()=> {
     playPauseIcon.className = 'ph-bold ph-play';
   }
 }
+// Selecting progress bar elements
+const progressBar = document.getElementById('progress-bar');
+const progressContainer = document.querySelector('.progress-container');
+
+// Update progress bar as the song plays
+currentSong.addEventListener('timeupdate', updateProgress);
+
+// Seek song position by clicking on the progress bar
+progressContainer.addEventListener('click', setProgress);
+
+function updateProgress() {
+  const { currentTime, duration } = currentSong;
+  const progressPercent = (currentTime / duration) * 100;
+  progressBar.style.width = `${progressPercent}%`;
+}
+
+function setProgress(e) {
+  const width = progressContainer.clientWidth;
+  const clickX = e.offsetX;
+  const duration = currentSong.duration;
+  currentSong.currentTime = (clickX / width) * duration;
+}
