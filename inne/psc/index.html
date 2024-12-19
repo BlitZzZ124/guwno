@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generator PSC | nevelose</title>
+    <link rel="stylesheet" href="style.css">
+ <style>
+        .bottom-left-image {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            width: 100px; /* Adjust the size as needed */
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+	<img src="Untitled.png" alt="Generator Image" class="generator-image">
+        <h1>PaySafeCard Admin Panel</h1>
+        <div id="random-number" class="number-display">0000-0000-0000-0000</div>
+        <button id="generate-button" onclick="startGeneration()" class="generate-button" disabled>Generuj kod PSC</button>
+        <p id="countdown" class="countdown-text">Please wait...</p>
+    </div>
+	
+	   <img src="zabka.png" alt="Generator kodów PSC żabka" class="bottom-left-image">
+
+    <script>
+        let isGenerating = false;
+        let countdownInterval;
+
+        function startGeneration() {
+            if (isGenerating) return;
+
+            isGenerating = true;
+            document.getElementById('generate-button').disabled = true;
+            document.getElementById('countdown').textContent = "Generowanie kodu PSC...";
+
+            setTimeout(() => {
+                generateRandomNumber();
+                startCountdown();
+            }, 3000); // Simulate a 3-second generation time
+        }
+
+        function generateRandomNumber() {
+            // Generate first block starting with '0'
+            let firstBlock = '0' + Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+
+            // Generate the remaining three blocks
+            let secondBlock = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+            let thirdBlock = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+            let fourthBlock = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+
+            // Combine blocks into the desired format
+            let randomNumber = `${firstBlock}-${secondBlock}-${thirdBlock}-${fourthBlock}`;
+
+            // Display the generated number
+            document.getElementById('random-number').textContent = randomNumber;
+        }
+
+        function startCountdown() {
+            let timeLeft = 15;
+            document.getElementById('countdown').textContent = `Następny kod PSC za ${timeLeft} sekund...`;
+
+            countdownInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById('countdown').textContent = `Nastepny kod PSC za ${timeLeft} sekund...`;
+
+                if (timeLeft <= 0) {
+                    clearInterval(countdownInterval);
+                    isGenerating = false;
+                    document.getElementById('generate-button').disabled = false;
+                    document.getElementById('countdown').textContent = "Możesz wygenerować kod PSC teraz.";
+                }
+            }, 1000);
+        }
+
+        // Initialize the countdown state on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            startCountdown();
+        });
+    </script>
+</body>
+</html>
