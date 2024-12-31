@@ -134,31 +134,5 @@
 <div class="bottom-gif">
     <img src="https://nevelose.xyz/files/qZQ7DfN.gif" alt="Animated GIF">
 </div>
-    
-    <script>
-        function createSnowflake() {
-            const snowflake = document.createElement('div');
-            snowflake.classList.add('snowflake');
-
-            const size = Math.random() * 10 + 5 + 'px';
-            const xPosition = Math.random() * window.innerWidth + 'px';
-            const duration = Math.random() * 3 + 2 + 's';
-            const xSpeed = (Math.random() * 2 - 1) * 10 + 'px';
-
-            snowflake.style.width = size;
-            snowflake.style.height = size;
-            snowflake.style.left = xPosition;
-            snowflake.style.animationDuration = duration;
-            snowflake.style.setProperty('--x-speed', xSpeed);
-
-            document.body.appendChild(snowflake);
-
-            setTimeout(() => {
-                snowflake.remove();
-            }, parseFloat(duration) * 1000);
-        }
-
-        setInterval(createSnowflake, 200);
-    </script>
 </body>
 </html>
