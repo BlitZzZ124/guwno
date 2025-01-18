@@ -40,17 +40,36 @@
 
         function createPopups(count) {
             // Open pop-ups sequentially to prevent being blocked by the browser
-            var popupIndex = 0;
+            let popupIndex = 0;
             function openNextPopup() {
                 if (popupIndex < count) {
                     let popup = window.open('', '', 'width=300,height=200');
                     if (popup) {
-                        popup.document.write('<html><head><title>Pop-up</title></head><body style="background-color:white;"><audio id="audio" loop><source src="your-audio-file.mp3" type="audio/mp3">Your browser does not support the audio element.</audio></body></html>');
+                        // Write content to the pop-up only once when it's created
+                        popup.document.write(`
+                            <html>
+                                <head>
+                                    <title>Pop-up</title>
+                                    <style>
+                                        body {
+                                            background-color: white;
+                                        }
+                                    </style>
+                                </head>
+                                <body>
+                                    <audio id="audio" loop>
+                                        <source src="your-audio-file.mp3" type="audio/mp3">
+                                        Your browser does not support the audio element.
+                                    </audio>
+                                </body>
+                            </html>
+                        `);
+
+                        // Play audio in the pop-up
                         let popupAudio = popup.document.getElementById('audio');
                         popupAudio.volume = 1; // Set the audio volume to full
                         popupAudio.play(); // Start playing the audio
-                        popup.document.body.style.backgroundColor = 'white';
-
+                        
                         // Flash random background color in the pop-up ultra fast
                         setInterval(function() {
                             popup.document.body.style.backgroundColor = Math.random() > 0.5 ? 'white' : 'black';
