@@ -49,7 +49,9 @@
 
             function openNextPopup() {
                 if (popupIndex < count) {
+                    // Open the pop-up window here
                     let popup = window.open('', '', 'width=300,height=200');
+                    
                     if (popup) {
                         // Write initial IRC-like content asking to allow pop-ups
                         popup.document.write(`
@@ -66,7 +68,7 @@
                                     <div id="ircMessage">
                                         <p><strong>IRC Chat:</strong> Welcome to our site!</p>
                                         <p><strong>System:</strong> Warning: Pop-ups are blocked. Please allow pop-ups to continue.</p>
-                                        <p><strong>IRC Chat:</strong> To make the chatroom open, enable pop-ups in your brwoser.</p>
+                                        <p><strong>IRC Chat:</strong> To make the chatroom open, enable pop-ups in your browser.</p>
                                     </div>
                                 </body>
                             </html>
@@ -96,7 +98,7 @@
                             }
 
                             // Optionally close the pop-up (or leave it open)
-                            popup.close();
+                            // popup.close(); // Un-comment this line if you want to close the pop-up after clicking "Allow Pop-ups"
                         };
 
                         popupIndex++;
