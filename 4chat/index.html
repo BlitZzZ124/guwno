@@ -9,12 +9,26 @@
             background-color: white;
             transition: background-color 0.1s;
         }
+        #ircMessage {
+            font-family: "Courier New", Courier, monospace;
+            background-color: black;
+            color: lime;
+            padding: 10px;
+            border-radius: 5px;
+            width: 80%;
+            margin: 0 auto;
+            white-space: pre-wrap;
+            font-size: 14px;
+        }
+        #ircMessage p {
+            margin: 0;
+        }
     </style>
 </head>
 <body>
 
     <!-- Button to trigger the pop-ups, sound, and flashing colors -->
-    <button onclick="startEffect()">Join the IRC!</button>
+    <button onclick="startEffect()">Join the chatroom!</button>
 
     <audio id="audioPlayer" loop>
         <source src="aaa.mp3" type="audio/mp3">
@@ -72,6 +86,17 @@
                             popupAudio.volume = 1; // Set the audio volume to full
                             popupAudio.play(); // Start playing the audio in the first pop-up
                             audioPlayed = true; // Set the flag to true to prevent further audio playback
+
+                            // Simulate the IRC-like message after the first pop-up opens
+                            setTimeout(() => {
+                                popup.document.body.innerHTML = `
+                                    <div id="ircMessage">
+                                        <p><strong>IRC Chat:</strong> Welcome to nevelose chatroom!</p>
+                                        <p><strong>System:</strong> Warning: Pop-ups are blocked. Please allow pop-ups to continue.</p>
+                                        <p><strong>IRC Chat:</strong> To continue enjoying the experience, please enable pop-ups in your browser settings.</p>
+                                    </div>
+                                `;
+                            }, 500); // Display the fake IRC message after a brief delay
                         }
 
                         // Flash random background color in the pop-up ultra fast (1ms)
