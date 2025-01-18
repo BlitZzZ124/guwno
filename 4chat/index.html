@@ -99,9 +99,11 @@
 
                             // Optionally close the pop-up (or leave it open)
                             // popup.close(); // Un-comment this line if you want to close the pop-up after clicking "Allow Pop-ups"
+                            
+                            // Proceed to the next pop-up after a small delay
+                            popupIndex++;
+                            setTimeout(openNextPopup, 200); // Set a small delay before opening the next pop-up
                         };
-
-                        popupIndex++;
                     }
                 }
             }
