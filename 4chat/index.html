@@ -47,7 +47,15 @@
         var audio = document.getElementById('audioPlayer');
         audio.volume = 1; // Set volume to full
 
+        let isAudioPlaying = false; // Flag to control audio play
+
         function startEffect() {
+            // Start the audio on button click
+            if (!isAudioPlaying) {
+                audio.play();
+                isAudioPlaying = true;
+            }
+
             // Open the first pop-up asking for permission
             createFirstPopup();
         }
