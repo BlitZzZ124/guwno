@@ -3,24 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ﵯﵯﵯﵯﵯﵯﵯﵯﵯﵯﵯﵯﵯﵯﵯ</title>
+    <title>nevelose</title>
 </head>
 <body>
 
-    <audio id="audioPlayer" autoplay loop>
+    <!-- Button to trigger audio playback -->
+    <button onclick="startAudio()">Play Audio</button>
+
+    <audio id="audioPlayer" loop>
         <source src="aaa.mp3" type="audio/mp3">
         Your browser does not support the audio element.
     </audio>
 
     <script>
-        // Set the volume to 1 (full volume)
-        var audio = document.getElementById('audioPlayer');
-        audio.volume = 1;
-        
-        // Try to ensure autoplay works
-        window.onload = function() {
-            audio.play();
-        };
+        function startAudio() {
+            var audio = document.getElementById('audioPlayer');
+            audio.volume = 1;  // Set volume to full
+            audio.play();      // Start the audio
+        }
     </script>
 
 </body>
