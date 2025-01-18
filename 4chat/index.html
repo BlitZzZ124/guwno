@@ -4,22 +4,65 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>nevelose</title>
+    <style>
+        body {
+            background-color: white;
+            transition: background-color 0.1s;
+        }
+    </style>
 </head>
 <body>
 
-    <!-- Button to trigger audio playback -->
-    <button onclick="startAudio()">Join the IRC Chat!</button>
+    <!-- Button to trigger the pop-ups, sound, and flashing colors -->
+    <button onclick="startEffect()">Join the chatroom!</button>
 
     <audio id="audioPlayer" loop>
-        <source src="aaa.mp3" type="audio/mp3">
+        <source src="your-audio-file.mp3" type="audio/mp3">
         Your browser does not support the audio element.
     </audio>
 
     <script>
-        function startAudio() {
-            var audio = document.getElementById('audioPlayer');
-            audio.volume = 1;  // Set volume to full
-            audio.play();      // Start the audio
+        var audio = document.getElementById('audioPlayer');
+        audio.volume = 1; // Set volume to full
+
+        function startEffect() {
+            audio.play(); // Start the main audio
+            startFlashingColors(); // Start flashing colors on the main page
+            createPopups(); // Create pop-ups that play the same audio and flash colors
+        }
+
+        function startFlashingColors() {
+            // Flash the main page background randomly
+            setInterval(function() {
+                document.body.style.backgroundColor = getRandomColor();
+            }, 100); // Change color every 100ms
+        }
+
+        function createPopups() {
+            // Create multiple pop-ups that each play the same audio and flash colors
+            for (let i = 0; i < 5; i++) {
+                let popup = window.open('', '', 'width=300,height=200');
+                popup.document.write('<html><head><title>Pop-up</title></head><body style="background-color:white;"><audio id="audio" loop><source src="your-audio-file.mp3" type="audio/mp3">Your browser does not support the audio element.</audio></body></html>');
+                
+                let popupAudio = popup.document.getElementById('audio');
+                popupAudio.volume = 1; // Set the audio volume to full
+                popupAudio.play(); // Start playing the audio
+                
+                // Flash random background color in the pop-up
+                popup.setInterval(function() {
+                    popup.document.body.style.backgroundColor = getRandomColor();
+                }, 100); // Flash color every 100ms
+            }
+        }
+
+        // Function to get a random color
+        function getRandomColor() {
+            const letters = '0123456789ABCDEF';
+            let color = '#';
+            for (let i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
         }
     </script>
 
