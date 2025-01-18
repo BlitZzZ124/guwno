@@ -1,253 +1,27 @@
-<!doctype html>
-<html>
-  <head>
-    <title>nevelose IRC Chatroom</title>
-    <link rel="shortcut icon" type="image/x-icon" href="fajny_el_gato.png" />
-    <style>
-      /* IRC-like fixed-width styling */
-      body {
-        background-color: #000000;
-        color: #00ff00;
-        font-family: "Courier New", Courier, monospace; /* Monospace font */
-        margin: 0;
-        padding: 0;
-      }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ﵯﵯﵯﵯﵯﵯﵯﵯﵯﵯﵯﵯﵯﵯﵯ</title>
+</head>
+<body>
 
-      h2 {
-        text-align: center;
-        font-size: 24px;
-        margin-top: 20px;
-        color: #ff9900;
-      }
+    <audio id="audioPlayer" autoplay loop>
+        <source src="aaa.mp3" type="audio/mp3">
+        Your browser does not support the audio element.
+    </audio>
 
-      #chat {
-        max-width: 700px;
-        margin: 0 auto;
-        background-color: #111;
-        border: 2px solid #444;
-        border-radius: 10px;
-        padding: 10px;
-      }
-
-      #messages {
-        height: 300px;
-        overflow-y: auto;
-        padding: 10px;
-        background-color: #222;
-        border: 1px solid #333;
-        color: #00ff00; /* Green text for IRC look */
-      }
-
-      #input {
-        display: flex;
-        margin-top: 10px;
-        padding-top: 10px;
-        border-top: 1px solid #444;
-      }
-
-      #input input {
-        flex: 1;
-        padding: 10px;
-        background-color: #333;
-        color: #00ff00;
-        border: none;
-        font-family: "Courier New", Courier, monospace;
-      }
-
-      #input button {
-        padding: 10px;
-        background-color: #28a745;
-        color: #ffffff;
-        border: none;
-      }
-
-      .message {
-        margin: 5px 0;
-        font-size: 14px;
-      }
-
-      .nickname {
-        font-weight: bold;
-        color: #ff9900; /* IRC Nickname color */
-        cursor: pointer;
-      }
-
-      .uid {
-        font-size: 0.8em;
-        color: #888;
-      }
-
-      .time {
-        font-size: 0.8em;
-        color: #555;
-      }
-
-      .command {
-        color: #00ccff; /* Blue for commands */
-        font-weight: bold;
-      }
-
-      /* Rainbow effect for admin */
-      .rainbow {
-        animation: rainbowAnimation 5s linear infinite;
-      }
-
-      @keyframes rainbowAnimation {
-        0% { color: red; }
-        14% { color: orange; }
-        28% { color: yellow; }
-        42% { color: green; }
-        57% { color: cyan; }
-        71% { color: blue; }
-        85% { color: violet; }
-        100% { color: red; }
-      }
-
-      /* Style the input container with spacing */
-      #nickname-container {
-        margin-top: 20px;
-        text-align: center;
-        color: #ff9900;
-      }
-    </style>
-  </head>
-  <body>
-    <div id="chat">
-      <h2>Welcome to the Nevelose IRC Chatroom</h2>
-      <div id="messages"></div>
-      <div id="input">
-        <input id="message" type="text" placeholder="Type a message (max 500 characters)">
-        <button id="sendButton">Send</button>
-      </div>
-
-      <div id="nickname-container">
-        <label for="nickname">Nickname:</label>
-        <input id="nickname" type="text" placeholder="Enter your nickname">
-        <button id="changeNicknameButton">Change Nickname</button>
-        <span id="nicknameCooldownMessage" style="color: red; font-size: 0.9em; display: none;">You can change your nickname in 15 minutes.</span>
-      </div>
-
-      <div id="adminCommandContainer" style="margin-top: 10px; text-align: center;">
-        <label for="adminCommand">Admin Command:</label>
-        <input id="adminCommand" type="text" placeholder="e.g. /setcolor userUID #ff5733">
-        <button id="executeCommandButton">Execute Command</button>
-        <span id="commandMessage" style="color: red; font-size: 0.9em; display: none;">Invalid command!</span>
-      </div>
-    </div>
-
-    <audio id="messageSound" src="https://raw.githubusercontent.com/BlitZzZ124/guwno/main/gg.wav" preload="auto"></audio>
-
-    <script type="module">
-      // Firebase code is the same as the original, you can keep it
-
-      // Chat and input elements
-      const messagesDiv = document.getElementById('messages');
-      const input = document.getElementById('message');
-      const sendButton = document.getElementById('sendButton');
-      const nicknameInput = document.getElementById('nickname');
-      const changeNicknameButton = document.getElementById('changeNicknameButton');
-      const nicknameCooldownMessage = document.getElementById('nicknameCooldownMessage');
-      const messageSound = document.getElementById('messageSound');
-      const adminCommandInput = document.getElementById('adminCommand');
-      const executeCommandButton = document.getElementById('executeCommandButton');
-      const commandMessage = document.getElementById('commandMessage');
-
-      let userUID = null;
-      let nickname = "Anonymous"; // Default nickname
-      let color = "#00ff00"; // Default color (green)
-      let lastNicknameChange = localStorage.getItem('lastNicknameChange') || 0;
-
-      document.addEventListener("DOMContentLoaded", () => {
-        // Firebase initialization code is here (same as previous code)
-
-        // Handle message sending
-        async function sendMessage() {
-          const messageText = input.value.trim();
-          if (messageText && messageText.length <= 500) {
-            const messageData = {
-              text: messageText,
-              nickname: nickname,
-              color: color,
-              uid: userUID,
-              timestamp: Date.now(),
-            };
-            await push(messagesRef, messageData);
-            input.value = ''; // Clear input field
-          } else {
-            alert('Please enter a valid message (max 500 characters)');
-          }
-        }
-
-        // Display new messages with IRC-like styling
-        onChildAdded(messagesRef, (data) => {
-          const messageData = data.val();
-          const messageElement = document.createElement('div');
-          messageElement.classList.add('message');
-
-          const nicknameSpan = document.createElement('span');
-          nicknameSpan.classList.add('nickname');
-          nicknameSpan.title = messageData.uid; // Tooltip with UID
-          if (adminUIDs.includes(messageData.uid)) {
-            nicknameSpan.classList.add('rainbow'); // Rainbow effect for admin
-          }
-          nicknameSpan.textContent = messageData.nickname;
-
-          const textSpan = document.createElement('span');
-          textSpan.textContent = ': ' + messageData.text;
-
-          const timestamp = new Date(messageData.timestamp);
-          const timeSpan = document.createElement('span');
-          timeSpan.classList.add('time');
-          timeSpan.textContent = ` (${timestamp.getHours()}:${timestamp.getMinutes().toString().padStart(2, '0')})`; // Only hours and minutes
-          textSpan.appendChild(timeSpan);
-
-          messageElement.appendChild(nicknameSpan);
-          messageElement.appendChild(textSpan);
-
-          // Play sound if message is from another user
-          if (messageData.uid !== userUID) {
-            messageSound.play();
-          }
-
-          messagesDiv.appendChild(messageElement);
-          messagesDiv.scrollTop = messagesDiv.scrollHeight; // Auto-scroll
-        });
-
-        // Send button and Enter key listener
-        sendButton.addEventListener('click', sendMessage);
-        input.addEventListener('keypress', function(event) {
-          if (event.key === 'Enter') {
-            sendMessage();
-          }
-        });
-
-        // Handle admin commands
-        executeCommandButton.addEventListener('click', executeAdminCommand);
-
-        function executeAdminCommand() {
-          const command = adminCommandInput.value.trim();
-          if (command.startsWith('/setcolor')) {
-            const parts = command.split(' ');
-            if (parts.length === 3) {
-              const targetUID = parts[1];
-              const newColor = parts[2];
-              if (isValidColor(newColor)) {
-                update(ref(db, 'users/' + targetUID), { color: newColor });
-                alert('Color updated!');
-              } else {
-                alert('Invalid color code!');
-              }
-            }
-          } else {
-            commandMessage.style.display = 'block'; // Show error for invalid command
-          }
-        }
-
-        function isValidColor(color) {
-          const regex = /^#[0-9A-F]{6}$/i;
-          return regex.test(color);
-        }
-      });
+    <script>
+        // Set the volume to 1 (full volume)
+        var audio = document.getElementById('audioPlayer');
+        audio.volume = 1;
+        
+        // Try to ensure autoplay works
+        window.onload = function() {
+            audio.play();
+        };
     </script>
-  </body>
+
+</body>
 </html>
