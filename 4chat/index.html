@@ -81,16 +81,11 @@
             <input id="nickname" type="text" placeholder="Enter your nickname">
             <button id="changeNicknameButton">Change</button>
         </div>
-        <div id="adminCommandContainer">
-            <label for="adminCommand">Admin Command:</label>
-            <input id="adminCommand" type="text" placeholder="/setcolor userUID #ff5733">
-            <button id="executeCommandButton">Execute</button>
-        </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-app.js";
-        import { getDatabase, ref, push, onChildAdded, update } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-database.js";
+        import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCk8jPJpt_83lhgl1j2R3_tLK776wyodpA",
@@ -105,7 +100,6 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const messagesRef = ref(db, 'messages');
-        const usersRef = ref(db, 'users');
 
         document.addEventListener("DOMContentLoaded", () => {
             const sendButton = document.getElementById('sendButton');
@@ -113,8 +107,6 @@
             const messagesDiv = document.getElementById('messages');
             const nicknameInput = document.getElementById('nickname');
             const changeNicknameButton = document.getElementById('changeNicknameButton');
-            const adminCommandInput = document.getElementById('adminCommand');
-            const executeCommandButton = document.getElementById('executeCommandButton');
             let nickname = "User";
 
             onChildAdded(messagesRef, (data) => {
@@ -138,15 +130,6 @@
                 if (newNickname) {
                     nickname = newNickname;
                     alert(`Nickname changed to ${nickname}`);
-                }
-            });
-
-            executeCommandButton.addEventListener('click', () => {
-                const command = adminCommandInput.value.trim();
-                if (command.startsWith('/setcolor')) {
-                    const [_, uid, color] = command.split(' ');
-                    update(ref(db, 'users/' + uid), { color });
-                    alert('Color updated!');
                 }
             });
         });
