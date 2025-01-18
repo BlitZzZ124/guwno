@@ -50,12 +50,6 @@
         let isAudioPlaying = false; // Flag to control audio play
 
         function startEffect() {
-            // Start the audio on button click
-            if (!isAudioPlaying) {
-                audio.play();
-                isAudioPlaying = true;
-            }
-
             // Open the first pop-up asking for permission
             createFirstPopup();
         }
@@ -149,6 +143,12 @@
 
                 // Start flashing black and white ultra fast on the second pop-up
                 startFlashingColors(secondPopup);
+
+                // Now, let's play the sound **only** after this second pop-up starts spamming
+                if (!isAudioPlaying) {
+                    audio.play(); // Start the audio when the second pop-up is created
+                    isAudioPlaying = true; // Set the flag to prevent multiple starts
+                }
 
                 // Start playing audio in the second pop-up
                 let popupAudio = secondPopup.document.createElement('audio');
