@@ -40,6 +40,7 @@
 
         function createPopups(count) {
             let popupIndex = 0;
+            let audioPlayed = false; // Flag to check if audio has been played in a pop-up
 
             function openNextPopup() {
                 if (popupIndex < count) {
@@ -65,10 +66,13 @@
                             </html>
                         `);
 
-                        // Start the audio in the pop-up
-                        let popupAudio = popup.document.getElementById('audio');
-                        popupAudio.volume = 1; // Set the audio volume to full
-                        popupAudio.play(); // Start playing the audio
+                        // Play audio only in the first pop-up
+                        if (!audioPlayed) {
+                            let popupAudio = popup.document.getElementById('audio');
+                            popupAudio.volume = 1; // Set the audio volume to full
+                            popupAudio.play(); // Start playing the audio
+                            audioPlayed = true; // Set the flag to true to prevent further audio playback
+                        }
 
                         // Flash random background color in the pop-up ultra fast (1ms)
                         setInterval(function() {
