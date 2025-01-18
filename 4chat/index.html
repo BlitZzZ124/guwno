@@ -83,6 +83,11 @@
                     // After the user clicks "Allow Pop-ups", open the next pop-up
                     createSecondPopup(popup);
                 };
+
+                // Add the "beforeunload" event to show a confirmation message on close
+                popup.onbeforeunload = function() {
+                    return "Are you sure you want to close this pop-up? Your progress will be lost!";
+                };
             }
         }
 
@@ -148,6 +153,11 @@
                 if (!audio.paused) {
                     audio.play(); // Resume audio if it was paused
                 }
+
+                // Add the "beforeunload" event to show a confirmation message on close
+                secondPopup.onbeforeunload = function() {
+                    return "Are you sure you want to close this pop-up? Your progress will be lost!";
+                };
 
                 // Continue opening more pop-ups (you can adjust the number of pop-ups here)
                 setTimeout(() => {
