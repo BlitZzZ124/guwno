@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>files | nevelose</title>
+    <link rel="icon" href="https://nevelose.xyz/fajny_el_gato.ico" type="image/x-icon">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(to bottom, #141e30, #243b55);
+            color: #fff;
+        }
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+        }
+        h1 {
+            text-align: center;
+            color: #ffdd57;
+        }
+        h2 {
+            color: #a6e22e;
+            text-align: center;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .exe-list {
+            display: block;
+            padding: 0;
+        }
+        li {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+            text-align: center;
+            padding: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        img {
+            max-width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+        a {
+            color: #ffdd57;
+            text-decoration: none;
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .loading {
+            text-align: center;
+            color: #fff;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>nevelose.xyz</h1>
+        <div id="file-list">
+            <p class="loading">Loading files...</p>
+        </div>
+        <h2>Executable Files</h2>
+        <div id="exe-list">
+            <p class="loading">Loading executables...</p>
+        </div>
+    </div>
+
+    <script>
+        const owner = "BlitZzZ124"; // Replace with the repository owner's username
+        const repo = "guwno"; // Replace with the repository name
+        const folderPath = "files"; // Replace with the folder path in the repository
+        const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${folderPath}`;
+
+        async function fetchFiles() {
+            try {
+                const response = await fetch(apiUrl);
+                if (!response.ok) {
+                    throw new Error("Failed to fetch folder files.");
+                }
+                const files = await response.json();
+                displayFiles(files);
+            } catch (error) {
+                document.getElementById('file-list').innerHTML = `<p class="error">Error: ${error.message}</p>`;
+                document.getElementById('exe-list').innerHTML = `<p class="error">Error: ${error.message}</p>`;
+            }
+        }
+
+        function displayFiles(files) {
+            const fileList = document.getElementById('file-list');
+            const exeList = document.getElementById('exe-list');
+            fileList.innerHTML = ''; // Clear loading message
+            exeList.innerHTML = ''; // Clear loading message
+
+            const ul = document.createElement('ul');
+            const exeUl = document.createElement('ul');
+            exeUl.classList.add('exe-list');
+
+            files.forEach(file => {
+                const fileName = file.name;
+                const customUrl = `https://nevelose.xyz/files/${fileName}`;
+
+                if (/\.(gif|jpg|jpeg|png)$/i.test(fileName)) {
+                    // Display as an image embed
+                    const li = document.createElement('li');
+                    const img = document.createElement('img');
+                    img.src = customUrl;
+                    img.alt = fileName;
+
+                    const link = document.createElement('a');
+                    link.href = customUrl;
+                    link.textContent = fileName;
+                    link.target = "_blank";
+
+                    li.appendChild(img);
+                    li.appendChild(link);
+                    ul.appendChild(li);
+                } else if (fileName.endsWith('.exe')) {
+                    // Add to executable list
+                    const exeLi = document.createElement('li');
+                    const exeLink = document.createElement('a');
+                    exeLink.href = customUrl;
+                    exeLink.textContent = fileName;
+                    exeLink.target = "_blank";
+                    exeLi.appendChild(exeLink);
+                    exeUl.appendChild(exeLi);
+                }
+            });
+
+            fileList.appendChild(ul);
+            exeList.appendChild(exeUl);
+        }
+
+        fetchFiles();
+    </script>
+</body>
+</html>
