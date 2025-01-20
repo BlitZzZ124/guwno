@@ -47,6 +47,7 @@
             text-align: center;
             padding: 10px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            position: relative; /* Make li a positioned ancestor for the copied message */
         }
         img {
             max-width: 100%;
@@ -68,6 +69,42 @@
             text-align: center;
             color: #fff;
             font-size: 18px;
+        }
+
+        .copy-link {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+        }
+
+        .copy-link:hover {
+            background-color: #45a049;
+        }
+
+        .copy-message {
+            display: none;
+            position: absolute;
+            bottom: 50px; /* Position above the button */
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #4CAF50;
+            color: white;
+            padding: 5px;
+            border-radius: 5px;
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .copy-message.show {
+            display: block;
+            opacity: 1;
         }
     </style>
 </head>
@@ -129,8 +166,11 @@
                     link.textContent = fileName;
                     link.target = "_blank";
 
+                    const copyLink = createCopyLink(customUrl);
+
                     li.appendChild(img);
                     li.appendChild(link);
+                    li.appendChild(copyLink);
                     ul.appendChild(li);
                 } else if (fileName.endsWith('.exe')) {
                     // Add to executable list
@@ -139,13 +179,39 @@
                     exeLink.href = customUrl;
                     exeLink.textContent = fileName;
                     exeLink.target = "_blank";
+                    const exeCopyLink = createCopyLink(customUrl);
+
                     exeLi.appendChild(exeLink);
+                    exeLi.appendChild(exeCopyLink);
                     exeUl.appendChild(exeLi);
                 }
             });
 
             fileList.appendChild(ul);
             exeList.appendChild(exeUl);
+        }
+
+        function createCopyLink(url) {
+            const copyLink = document.createElement('div');
+            copyLink.className = 'copy-link';
+            copyLink.textContent = 'Copy Link';
+
+            const message = document.createElement('div');
+            message.className = 'copy-message';
+            message.textContent = "Copied!";
+
+            copyLink.appendChild(message);
+
+            copyLink.onclick = () => {
+                navigator.clipboard.writeText(url).then(() => {
+                    message.classList.add('show');
+                    setTimeout(() => {
+                        message.classList.remove('show');
+                    }, 2000); // Hide after 2 seconds
+                });
+            };
+
+            return copyLink;
         }
 
         fetchFiles();
