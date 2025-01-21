@@ -15,7 +15,7 @@
         }
 
         #chat-container {
-            width: 600px;  /* Increase the width */
+            width: 600px; /* Increased width */
             height: 600px;
             background-color: #2A2A2A;
             margin: 50px auto;
@@ -155,6 +155,39 @@
             85% { color: violet; }
             100% { color: red; }
         }
+
+        /* Styling for embedded images */
+        .embedded-image {
+            max-width: 200px; /* Smaller size for images */
+            max-height: 200px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-top: 5px;
+        }
+
+        /* Style for when image is clicked and enlarged */
+        .large-image {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            max-width: 90%;
+            max-height: 90%;
+            z-index: 9999;
+            border: 2px solid #fff;
+            background-color: #000;
+        }
+
+        /* Background overlay when image is clicked */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 9998;
+        }
     </style>
 </head>
 <body>
@@ -214,6 +247,10 @@
             const changeNicknameButton = document.getElementById('changeNicknameButton');
             const nicknameCooldownMessage = document.getElementById('nicknameCooldownMessage');
             const messageSound = document.getElementById('messageSound');
+
+            const adminCommandInput = document.getElementById('adminCommand');
+            const executeCommandButton = document.getElementById('executeCommandButton');
+            const commandMessage = document.getElementById('commandMessage');
 
             let userUID = null;
             let nickname = "Anonymous"; // Default nickname
@@ -283,27 +320,29 @@
                     }
                     nicknameSpan.textContent = messageData.nickname;
 
-                    // Check if the message is an image and display accordingly
+                    // Add message text or embedded image
                     const textSpan = document.createElement('span');
-                    if (isImage(messageData.text)) {
-                        const img = document.createElement('img');
-                        img.src = messageData.text;
-                        img.style.maxWidth = '100%';
-                        img.style.borderRadius = '5px';
-                        messageElement.appendChild(nicknameSpan);
-                        messageElement.appendChild(img);
+                    if (messageData.text.startsWith('http') && /\.(gif|jpg|jpeg|png)$/i.test(messageData.text)) {
+                        const imageElement = document.createElement('img');
+                        imageElement.src = messageData.text;
+                        imageElement.classList.add('embedded-image');
+                        imageElement.addEventListener('click', () => {
+                            openLargeImage(messageData.text);
+                        });
+                        textSpan.appendChild(imageElement);
                     } else {
                         textSpan.textContent = ': ' + messageData.text;
-                        messageElement.appendChild(nicknameSpan);
-                        messageElement.appendChild(textSpan);
                     }
 
-                    // Add timestamp next to the message
+                    // Add timestamp next to the message in smaller font and without seconds
                     const timestamp = new Date(messageData.timestamp);
                     const timeSpan = document.createElement('span');
                     timeSpan.classList.add('time');
                     timeSpan.textContent = ` (${timestamp.getHours()}:${timestamp.getMinutes().toString().padStart(2, '0')})`; // Only hours and minutes
                     textSpan.appendChild(timeSpan);
+
+                    messageElement.appendChild(nicknameSpan);
+                    messageElement.appendChild(textSpan);
 
                     // Check if the sender is not the current user, play sound
                     if (messageData.uid !== userUID) {
@@ -341,40 +380,22 @@
                         alert('Please enter a valid message (max 500 characters)');
                     }
                 }
-
-                // Helper function to check if the text is an image URL
-                function isImage(url) {
-                    return /\.(gif|jpe?g|png)$/i.test(url);
-                }
             }
 
-            // Nickname change handling
-            changeNicknameButton.addEventListener('click', changeNickname);
+            // Function to open image in full size
+            function openLargeImage(imageUrl) {
+                const overlay = document.createElement('div');
+                overlay.classList.add('overlay');
+                const largeImage = document.createElement('img');
+                largeImage.src = imageUrl;
+                largeImage.classList.add('large-image');
+                overlay.appendChild(largeImage);
 
-            function changeNickname() {
-                const currentTime = Date.now();
-                const timeSinceLastChange = currentTime - lastNicknameChange;
+                document.body.appendChild(overlay);
 
-                if (timeSinceLastChange >= 15 * 60 * 1000) { // 15-minute cooldown
-                    const newNickname = nicknameInput.value.trim();
-
-                    if (newNickname.length > 0) {
-                        // Restrict "nevelose" to your UID only
-                        if (newNickname.toLowerCase() === "nevelose" && userUID !== "6mu1HqthUdT9s0VVIA6OxPpa0WD2") {
-                            alert("You are not allowed to use this nickname.");
-                            return;
-                        }
-
-                        nickname = newNickname;
-                        localStorage.setItem('nickname', nickname); // Store nickname in local storage
-                        set(ref(db, 'users/' + userUID), { nickname, color });
-                        lastNicknameChange = currentTime;
-                        localStorage.setItem('lastNicknameChange', lastNicknameChange);
-                        nicknameCooldownMessage.style.display = 'none';
-                    }
-                } else {
-                    nicknameCooldownMessage.style.display = 'block'; // Show cooldown message
-                }
+                overlay.addEventListener('click', () => {
+                    document.body.removeChild(overlay);
+                });
             }
         });
     </script>
