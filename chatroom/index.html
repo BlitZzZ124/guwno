@@ -15,7 +15,7 @@
         }
 
         #chat-container {
-            width: 400px;
+            width: 600px;  /* Increase the width */
             height: 600px;
             background-color: #2A2A2A;
             margin: 50px auto;
@@ -215,10 +215,6 @@
             const nicknameCooldownMessage = document.getElementById('nicknameCooldownMessage');
             const messageSound = document.getElementById('messageSound');
 
-            const adminCommandInput = document.getElementById('adminCommand');
-            const executeCommandButton = document.getElementById('executeCommandButton');
-            const commandMessage = document.getElementById('commandMessage');
-
             let userUID = null;
             let nickname = "Anonymous"; // Default nickname
             let color = "#FFD700"; // Default color (gold)
@@ -287,19 +283,27 @@
                     }
                     nicknameSpan.textContent = messageData.nickname;
 
-                    // Add message text
+                    // Check if the message is an image and display accordingly
                     const textSpan = document.createElement('span');
-                    textSpan.textContent = ': ' + messageData.text;
+                    if (isImage(messageData.text)) {
+                        const img = document.createElement('img');
+                        img.src = messageData.text;
+                        img.style.maxWidth = '100%';
+                        img.style.borderRadius = '5px';
+                        messageElement.appendChild(nicknameSpan);
+                        messageElement.appendChild(img);
+                    } else {
+                        textSpan.textContent = ': ' + messageData.text;
+                        messageElement.appendChild(nicknameSpan);
+                        messageElement.appendChild(textSpan);
+                    }
 
-                    // Add timestamp next to the message in smaller font and without seconds
+                    // Add timestamp next to the message
                     const timestamp = new Date(messageData.timestamp);
                     const timeSpan = document.createElement('span');
                     timeSpan.classList.add('time');
                     timeSpan.textContent = ` (${timestamp.getHours()}:${timestamp.getMinutes().toString().padStart(2, '0')})`; // Only hours and minutes
                     textSpan.appendChild(timeSpan);
-
-                    messageElement.appendChild(nicknameSpan);
-                    messageElement.appendChild(textSpan);
 
                     // Check if the sender is not the current user, play sound
                     if (messageData.uid !== userUID) {
@@ -338,32 +342,9 @@
                     }
                 }
 
-                // Admin Command Handling
-                executeCommandButton.addEventListener('click', executeAdminCommand);
-
-                function executeAdminCommand() {
-                    const command = adminCommandInput.value.trim();
-                    if (command.startsWith('/setcolor')) {
-                        const parts = command.split(' ');
-                        if (parts.length === 3) {
-                            const targetUID = parts[1];
-                            const newColor = parts[2];
-                            if (isValidColor(newColor)) {
-                                update(ref(db, 'users/' + targetUID), { color: newColor });
-                                alert('Color updated!');
-                            } else {
-                                alert('Invalid color code!');
-                            }
-                        }
-                    } else {
-                        commandMessage.style.display = 'block'; // Show error for invalid command
-                    }
-                }
-
-                // Helper function to validate color code
-                function isValidColor(color) {
-                    const regex = /^#[0-9A-F]{6}$/i;
-                    return regex.test(color);
+                // Helper function to check if the text is an image URL
+                function isImage(url) {
+                    return /\.(gif|jpe?g|png)$/i.test(url);
                 }
             }
 
@@ -394,16 +375,6 @@
                 } else {
                     nicknameCooldownMessage.style.display = 'block'; // Show cooldown message
                 }
-            }
-
-            // Function to generate random colors for users
-            function generateRandomColor() {
-                const letters = '0123456789ABCDEF';
-                let color = '#';
-                for (let i = 0; i < 6; i++) {
-                    color += letters[Math.floor(Math.random() * 16)];
-                }
-                return color;
             }
         });
     </script>
