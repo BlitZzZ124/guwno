@@ -188,6 +188,16 @@
             background-color: rgba(0, 0, 0, 0.7);
             z-index: 9998;
         }
+
+        /* Styling for advertisement images */
+        .ad-image {
+            width: 300px;  /* Average ad size */
+            height: 250px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 15px;
+            margin-bottom: 15px;
+        }
     </style>
 </head>
 <body>
@@ -330,6 +340,14 @@
                             openLargeImage(messageData.text);
                         });
                         textSpan.appendChild(imageElement);
+                    } else if (messageData.text.startsWith('ad:')) {
+                        const adImage = document.createElement('img');
+                        adImage.src = messageData.text.split(':')[1];
+                        adImage.classList.add('ad-image');
+                        adImage.addEventListener('click', () => {
+                            window.open(messageData.text.split(':')[2], '_blank');
+                        });
+                        textSpan.appendChild(adImage);
                     } else {
                         textSpan.textContent = ': ' + messageData.text;
                     }
