@@ -208,8 +208,8 @@
         }
 
         #ad-container img {
-            width: 300px;  /* Customizable image size */
-            height: 250px; /* Customizable image size */
+            width: 309px;  /* Customizable image size */
+            height: 60px; /* Customizable image size */
             cursor: pointer;
             border-radius: 5px;
         }
@@ -230,9 +230,10 @@
         </div>
     </div>
 
+    
     <!-- Space for your custom image below the chatbox -->
     <div id="ad-container">
-        <img src="https://nevelose.xyz/files/hq720.jpg" alt="Advertisement" onclick="window.open('https://www.totalcasino.pl/', '_blank')">
+        <img src="https://nevelose.xyz/files/text.gif" alt="Advertisement" onclick="window.open('https://www.totalcasino.pl/', '_blank')">
     </div>
 
     <audio id="messageSound" src="https://nevelose.xyz/chatroom/notify.wav" preload="auto"></audio>
@@ -369,6 +370,11 @@
                     const timeSpan = document.createElement('span');
                     timeSpan.classList.add('time');
                     timeSpan.textContent = ` (${timestamp.getHours()}:${timestamp.getMinutes().toString().padStart(2, '0')})`; // Only hours and minutes
+
+                    // Add full date to title attribute (will appear on hover)
+                    const fullDate = timestamp.toLocaleString(); // Get full date in localized format
+                    timeSpan.title = fullDate; // Show full date on hover
+
                     textSpan.appendChild(timeSpan);
 
                     messageElement.appendChild(nicknameSpan);
