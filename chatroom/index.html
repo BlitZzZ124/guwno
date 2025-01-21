@@ -15,7 +15,7 @@
         }
 
         #chat-container {
-            width: 600px; /* Increased width */
+            width: 600px;
             height: 600px;
             background-color: #2A2A2A;
             margin: 50px auto;
@@ -191,12 +191,26 @@
 
         /* Styling for advertisement images */
         .ad-image {
-            width: 300px;  /* Average ad size */
+            width: 300px;
             height: 250px;
             border-radius: 5px;
             cursor: pointer;
             margin-top: 15px;
             margin-bottom: 15px;
+        }
+
+        /* Section for custom image below chatbox */
+        #ad-container {
+            text-align: center;
+            margin-top: 15px;
+            margin-bottom: 15px;
+        }
+
+        #ad-container img {
+            width: 300px;  /* Customizable image size */
+            height: 250px; /* Customizable image size */
+            cursor: pointer;
+            border-radius: 5px;
         }
     </style>
 </head>
@@ -213,6 +227,11 @@
             <button id="changeNicknameButton">Change Nickname</button>
             <span id="nicknameCooldownMessage" style="color: red; font-size: 0.9em; display: none;">You can change your nickname in 15 minutes.</span>
         </div>
+    </div>
+
+    <!-- Space for your custom image below the chatbox -->
+    <div id="ad-container">
+        <img src="https://nevelose.xyz/files/hq720.jpg" alt="Advertisement" onclick="window.open('https://www.totalcasino.pl/', '_blank')">
     </div>
 
     <audio id="messageSound" src="https://raw.githubusercontent.com/BlitZzZ124/guwno/main/gg.wav" preload="auto"></audio>
@@ -340,14 +359,6 @@
                             openLargeImage(messageData.text);
                         });
                         textSpan.appendChild(imageElement);
-                    } else if (messageData.text.startsWith('ad:')) {
-                        const adImage = document.createElement('img');
-                        adImage.src = messageData.text.split(':')[1];
-                        adImage.classList.add('ad-image');
-                        adImage.addEventListener('click', () => {
-                            window.open(messageData.text.split(':')[2], '_blank');
-                        });
-                        textSpan.appendChild(adImage);
                     } else {
                         textSpan.textContent = ': ' + messageData.text;
                     }
@@ -398,22 +409,6 @@
                         alert('Please enter a valid message (max 500 characters)');
                     }
                 }
-            }
-
-            // Function to open image in full size
-            function openLargeImage(imageUrl) {
-                const overlay = document.createElement('div');
-                overlay.classList.add('overlay');
-                const largeImage = document.createElement('img');
-                largeImage.src = imageUrl;
-                largeImage.classList.add('large-image');
-                overlay.appendChild(largeImage);
-
-                document.body.appendChild(overlay);
-
-                overlay.addEventListener('click', () => {
-                    document.body.removeChild(overlay);
-                });
             }
         });
     </script>
