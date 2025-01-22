@@ -213,28 +213,70 @@
             cursor: pointer;
             border-radius: 5px;
         }
+        #profileButton {
+        position: fixed; /* Fixes the button in the viewport */
+        top: 10px;       /* Distance from the top of the viewport */
+        right: 10px;     /* Distance from the right of the viewport */
+        padding: 10px 20px;
+        background-color: #FFD700;
+        border: none;
+        border-radius: 5px;
+        font-weight: bold;
+        cursor: pointer;
+        color: #333;
+        transition: background-color 0.3s;
+        z-index: 1000; /* Ensures it is above other elements */
+    }
+
+    #profileButton:hover {
+        background-color: #FFC300;
+    }
+
+    #profileButton:hover {
+        background-color: #FFC300;
+    }
+
+    /* Ensure parent container has position relative for absolute positioning */
+    #chat-container {
+        position: relative;
+    }
     </style>
 </head>
 <body>
-    <div id="chat-container">
-        <div id="header">Chatroom</div>
-        <div id="messages"></div>
-        <div id="input-container">
-            <input id="message" type="text" placeholder="Type a message (max 500 characters)">
-            <button id="sendButton">Send</button>
-        </div>
-        <div id="nickname-container">
-            <input id="nickname" type="text" placeholder="Enter your nickname">
-            <button id="changeNicknameButton">Change Nickname</button>
-            <span id="nicknameCooldownMessage" style="color: red; font-size: 0.9em; display: none;">You can change your nickname in 15 minutes.</span>
-        </div>
-    </div>
 
     
-    <!-- Space for your custom image below the chatbox -->
-    <div id="ad-container">
-        <img src="https://nevelose.xyz/files/text.gif" alt="Advertisement" onclick="window.open('https://www.totalcasino.pl/', '_blank')">
+        <!-- New Profile Button -->
+        <button id="profileButton">Edit Profile</button>
     </div>
+    
+    <body>
+        <!-- New Profile Button -->
+        <button id="profileButton">Edit Profile</button>
+    
+        <div id="chat-container">
+            <div id="header">NAJLEPSZY CHATROOM W PL 🔥💯</div>
+            <div id="messages"></div>
+            <div id="input-container">
+                <input id="message" type="text" placeholder="Type a message (max 500 characters)">
+                <button id="sendButton">Send</button>
+            </div>
+        </div>
+    
+        <div id="ad-container">
+            <img src="https://nevelose.xyz/files/text.gif" alt="Advertisement" onclick="window.open('https://www.totalcasino.pl/', '_blank')">
+        </div>
+    
+        <audio id="messageSound" src="https://nevelose.xyz/chatroom/notify.wav" preload="auto"></audio>
+    
+        <script>
+            // Redirect to profile editing page on button click
+            const profileButton = document.getElementById('profileButton');
+            profileButton.addEventListener('click', () => {
+                window.location.href = "https://nevelose.xyz/chatroom/profile.html";
+            });
+        </script>
+    </body>
+    
 
     <audio id="messageSound" src="https://nevelose.xyz/chatroom/notify.wav" preload="auto"></audio>
 
@@ -274,7 +316,6 @@
             const messagesDiv = document.getElementById('messages');
             const input = document.getElementById('message');
             const sendButton = document.getElementById('sendButton');
-            const nicknameInput = document.getElementById('nickname');
             const changeNicknameButton = document.getElementById('changeNicknameButton');
             const nicknameCooldownMessage = document.getElementById('nicknameCooldownMessage');
             const messageSound = document.getElementById('messageSound');
@@ -321,7 +362,7 @@
             // Function to load chat after authentication
             function loadChat() {
                 nickname = localStorage.getItem('nickname') || 'Anonymous';
-                nicknameInput.value = nickname;
+
 
                 // Retrieve user's nickname and color from Firebase if they exist
                 const userRef = ref(db, 'users/' + userUID);
@@ -330,7 +371,6 @@
                     if (data) {
                         nickname = data.nickname;
                         color = data.color; // Retrieve color from Firebase
-                        nicknameInput.value = nickname;
                     }
                 });
 
