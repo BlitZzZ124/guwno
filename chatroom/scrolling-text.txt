@@ -1,0 +1,7 @@
+Uncaught ReferenceError: firebase is not defined
+jaka jest ruznica miedzy “ò” a “ó”
+happy new year 2013 ;-D
+pozdrawiam slub
+hajsy co robić
+"Dear fuck nigga..."
+Ministerstwo memów, zdjęć i innych śmiesznych obrazków - KWEJK.pl

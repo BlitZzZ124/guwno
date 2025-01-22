@@ -240,6 +240,38 @@
     #chat-container {
         position: relative;
     }
+    #scrollingText {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background-color: #333;
+            color: white;
+            font-size: 18px;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        /* Styling each line of text */
+        .scrolling-line {
+            display: inline-block;
+            padding-right: 100%; /* Initial space for the scrolling effect */
+            margin-right: 50px; /* Space between lines */
+        }
+
+        /* Scrolling animation */
+        @keyframes scrollText {
+            0% {
+                transform: translateX(100%);
+            }
+            100% {
+                transform: translateX(-100%);
+            }
+        }
+
+        .scrolling-line {
+            animation: scrollText 15s linear infinite; /* Adjust 20s for speed */
+        }
     </style>
 </head>
 <body>
@@ -273,6 +305,84 @@
         </script>
     </body>
     
+     <!-- Scrolling Text Container -->
+     <div id="scrollingText">
+        <span id="scrollingContent">Loading scrolling text...</span>
+    </div>
+
+    <script>
+        // Function to shuffle an array using Fisher-Yates (Knuth) algorithm
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]]; // Swap elements
+            }
+            return array;
+        }
+
+        // Function to load the text from the txt file and update the scrolling text
+        async function loadScrollingText() {
+            try {
+                const response = await fetch('scrolling-text.txt'); // Path to your text file
+                if (!response.ok) {
+                    throw new Error('File not found');
+                }
+                const text = await response.text();
+
+                // Split the text by newlines to create separate lines for scrolling
+                const lines = text.split('\n'); // Splits the content into an array of lines
+
+                // Shuffle the lines array
+                let shuffledLines = shuffleArray(lines);
+
+                // Store already displayed texts in a Set to avoid repetition
+                const displayedLines = new Set();
+
+                // Get the container for the scrolling content
+                const scrollingContent = document.getElementById('scrollingContent');
+                scrollingContent.innerHTML = ''; // Clear any existing content
+
+                // Function to show the next line, ensuring no repetition
+                async function showNextLine() {
+                    // If all lines have been displayed, reset and shuffle again
+                    if (shuffledLines.length === 0) {
+                        shuffledLines = shuffleArray(lines); // Reshuffle the lines
+                    }
+
+                    // Get the next line to display and ensure it hasn't been displayed yet
+                    let nextLine = shuffledLines.pop();
+                    while (displayedLines.has(nextLine) && shuffledLines.length > 0) {
+                        nextLine = shuffledLines.pop(); // Pick another one if it's already displayed
+                    }
+
+                    // Add this line to the displayed set
+                    displayedLines.add(nextLine);
+
+                    // Create the line element and add it to the content
+                    const lineElement = document.createElement('div');
+                    lineElement.classList.add('scrolling-line');
+                    lineElement.textContent = nextLine.trim(); // Add line to the element
+                    scrollingContent.appendChild(lineElement);
+
+                    // Wait for the animation to complete before adding the next line
+                    await new Promise(resolve => setTimeout(resolve, 20000)); // Wait for 20s (duration of the animation)
+
+                    // Show the next line after the current one finishes
+                    showNextLine();
+                }
+
+                // Start the process of showing lines
+                showNextLine();
+
+            } catch (error) {
+                console.error('Error loading the text file:', error);
+                document.getElementById('scrollingContent').textContent = 'Error loading text.';
+            }
+        }
+
+        // Call the function to load the text when the page loads
+        window.onload = loadScrollingText;
+    </script>
 
     <audio id="messageSound" src="https://nevelose.xyz/chatroom/notify.wav" preload="auto"></audio>
 
