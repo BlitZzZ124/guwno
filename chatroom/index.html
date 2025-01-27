@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chatroom | nevelose</title>
     <link rel="icon" href="https://nevelose.xyz/fajny_el_gato.ico" type="image/x-icon">
+    <meta property="og:title" content="Chatroom | nevelose" />
+    <meta property="og:description" content="Najlespzy chatroom w PL 💯💯💯💯🔥🔥🔥🔥🔥." />
+    <meta property="og:image" content="https://i.imgur.com/VjpWbpA.gif" />
+    <meta property="og:url" content="https://nevelose.xyz/chatroom/" />
+    <meta property="og:type" content="website" />
     <style>
         /* General Reset */
         body {
@@ -519,11 +524,19 @@ onChildAdded(messagesRef, (data) => {
     avatarElement.classList.add('avatar');
     messageElement.appendChild(avatarElement); // Append avatar to message before fetching the actual avatar
 
+
+
     // Add nickname (same as before)
     const nicknameSpan = document.createElement('span');
     nicknameSpan.classList.add('nickname');
     nicknameSpan.title = messageData.uid; // Set UID as title for tooltip
     nicknameSpan.textContent = messageData.nickname || "Unknown"; // Fallback to 'Unknown' if no nickname
+    if (adminUIDs.includes(messageData.uid)) {
+                        nicknameSpan.classList.add('rainbow'); // Apply rainbow effect
+                    } else {
+                        nicknameSpan.style.color = messageData.color || 'black'; // Apply custom color for non-admins
+                    }
+                    nicknameSpan.textContent = messageData.nickname;
 
     // Add message text or image (same as before)
     const textSpan = document.createElement('span');
