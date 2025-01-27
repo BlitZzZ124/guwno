@@ -5,13 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profile Editing | nevelose</title>
     <link rel="icon" href="https://nevelose.xyz/fajny_el_gato.ico" type="image/x-icon">
-   
-        <meta property="og:title" content="Chatroom | nevelose" />
-    <meta property="og:description" content="Najlepszy chatroom w PL 💯💯💯💯🔥🔥🔥🔥🔥." />
-    <meta property="og:image" content="https://i.imgur.com/VjpWbpA.gif" />
-    <meta property="og:url" content="https://nevelose.xyz/chatroom/" />
-    <meta property="og:type" content="website" />
-    
     <style>
         /* General Reset */
         body {
@@ -106,18 +99,19 @@
             <option value="#9400D3" style="color: #9400D3;">Dark Violet</option>
             <option value="#00CED1" style="color: #00CED1;">Dark Turquoise</option>
         </select>
-
+        
         <div class="color-preview" id="colorPreview" style="background-color: #FFD700;"></div>
 
         <button id="saveProfile">Save Changes</button>
-
+        <button id="changeAvatarButton">Change Avatar</button>
         <div id="feedback"></div>
     </div>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-app.js";
-        import { getDatabase, ref, update } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-database.js";
-        import { getAuth } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-auth.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-app.js";
+    import { getDatabase, ref, update, onValue } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-database.js";
+    import { getAuth } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-auth.js";
+
 
         // Firebase configuration
         const firebaseConfig = {
@@ -179,6 +173,53 @@
                 feedback.style.color = 'red';
             }
         });
+        // Get the "Change Avatar" button
+const changeAvatarButton = document.getElementById('changeAvatarButton');
+
+// Add a click event listener to the button
+changeAvatarButton.addEventListener('click', async () => {
+    const newAvatarUrl = prompt("Enter the URL of your new avatar:");
+
+    if (newAvatarUrl) {
+        try {
+            const user = auth.currentUser;
+
+            if (!user) {
+                alert("You must be logged in to change your avatar.");
+                return;
+            }
+
+            const userUID = user.uid;
+
+            // Update the avatarUrl in Firebase
+            const userRef = ref(db, 'users/' + userUID);
+            await update(userRef, { avatarUrl: newAvatarUrl });
+
+            // Notify the user of success
+            alert("Avatar updated successfully!");
+
+            // Fetch and display the updated avatar (for demonstration purposes)
+            onValue(userRef, (snapshot) => {
+                const data = snapshot.val();
+                if (data && data.avatarUrl) {
+                    console.log("Updated avatar URL:", data.avatarUrl); // Logs the new avatar URL
+                    // Optionally, update the UI here, e.g.:
+                    // document.getElementById('avatar').src = data.avatarUrl;
+                }
+            });
+
+        } catch (error) {
+            console.error("Error updating avatar:", error);
+            alert("Failed to update avatar. Please try again.");
+        }
+    } else {
+        alert("No URL provided. Avatar not updated.");
+    }
+});
+
+
+
+    
     </script>
 </body>
 </html>

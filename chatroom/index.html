@@ -5,12 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chatroom | nevelose</title>
     <link rel="icon" href="https://nevelose.xyz/fajny_el_gato.ico" type="image/x-icon">
-            <meta property="og:title" content="Chatroom | nevelose" />
-    <meta property="og:description" content="Najlepszy chatroom w PL 💯💯💯💯🔥🔥🔥🔥🔥." />
-    <meta property="og:image" content="https://i.imgur.com/VjpWbpA.gif" />
-    <meta property="og:url" content="https://nevelose.xyz/chatroom/" />
-    <meta property="og:type" content="website" />
-    
     <style>
         /* General Reset */
         body {
@@ -51,9 +45,17 @@
             font-size: 14px;
         }
 
+        .avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        margin-right: 10px;
+        }
+
         .message {
-            margin-bottom: 10px;
-            word-wrap: break-word;
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
         }
 
         .nickname {
@@ -278,6 +280,25 @@
         .scrolling-line {
             animation: scrollText 15s linear infinite; /* Adjust 20s for speed */
         }
+        .avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+    }
+    .nickname {
+    font-weight: bold;
+    }
+    .time {
+    color: #888;
+    font-size: 0.8em;
+    }
+    .message {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    }
+
     </style>
 </head>
 <body>
@@ -436,6 +457,7 @@
             const executeCommandButton = document.getElementById('executeCommandButton');
             const commandMessage = document.getElementById('commandMessage');
 
+            let avatarUrl = ""; // Default avatar URL
             let userUID = null;
             let nickname = "Anonymous"; // Default nickname
             let color = "#FFD700"; // Default color (gold)
@@ -486,62 +508,90 @@
                     }
                 });
 
-                // Listen for new messages
-                onChildAdded(messagesRef, (data) => {
-                    const messageData = data.val();
-                    const messageElement = document.createElement('div');
-                    messageElement.classList.add('message');
+// Listen for new messages
+onChildAdded(messagesRef, (data) => {
+    const messageData = data.val();
+    const messageElement = document.createElement('div');
+    messageElement.classList.add('message');
 
-                    // Add rainbow effect to nickname for all messages
-                    const nicknameSpan = document.createElement('span');
-                    nicknameSpan.classList.add('nickname');
-                    nicknameSpan.title = messageData.uid; // Set UID as title for tooltip
-                    if (adminUIDs.includes(messageData.uid)) {
-                        nicknameSpan.classList.add('rainbow'); // Apply rainbow effect
-                    } else {
-                        nicknameSpan.style.color = messageData.color || 'black'; // Apply custom color for non-admins
-                    }
-                    nicknameSpan.textContent = messageData.nickname;
+    // Create avatar image element without setting the src yet
+    const avatarElement = document.createElement('img');
+    avatarElement.classList.add('avatar');
+    messageElement.appendChild(avatarElement); // Append avatar to message before fetching the actual avatar
 
-                    // Add message text or embedded image
-                    const textSpan = document.createElement('span');
-                    if (messageData.text.startsWith('http') && /\.(gif|jpg|jpeg|png)$/i.test(messageData.text)) {
-                        const imageElement = document.createElement('img');
-                        imageElement.src = messageData.text;
-                        imageElement.classList.add('embedded-image');
-                        imageElement.addEventListener('click', () => {
-                            openLargeImage(messageData.text);
-                        });
-                        textSpan.appendChild(imageElement);
-                    } else {
-                        textSpan.textContent = ': ' + messageData.text;
-                    }
+    // Add nickname (same as before)
+    const nicknameSpan = document.createElement('span');
+    nicknameSpan.classList.add('nickname');
+    nicknameSpan.title = messageData.uid; // Set UID as title for tooltip
+    nicknameSpan.textContent = messageData.nickname || "Unknown"; // Fallback to 'Unknown' if no nickname
 
-                    // Add timestamp next to the message in smaller font and without seconds
-                    const timestamp = new Date(messageData.timestamp);
-                    const timeSpan = document.createElement('span');
-                    timeSpan.classList.add('time');
-                    timeSpan.textContent = ` (${timestamp.getHours()}:${timestamp.getMinutes().toString().padStart(2, '0')})`; // Only hours and minutes
+    // Add message text or image (same as before)
+    const textSpan = document.createElement('span');
+    if (messageData.text.startsWith('http') && /\.(gif|jpg|jpeg|png)$/i.test(messageData.text)) {
+        const imageElement = document.createElement('img');
+        imageElement.src = messageData.text;
+        imageElement.classList.add('embedded-image');
+        imageElement.addEventListener('click', () => {
+            openLargeImage(messageData.text);
+        });
+        textSpan.appendChild(imageElement);
+    } else {
+        textSpan.textContent = ': ' + messageData.text;
+    }
 
-                    // Add full date to title attribute (will appear on hover)
-                    const fullDate = timestamp.toLocaleString(); // Get full date in localized format
-                    timeSpan.title = fullDate; // Show full date on hover
+    // Add timestamp (same as before)
+    const timestamp = new Date(messageData.timestamp);
+    const timeSpan = document.createElement('span');
+    timeSpan.classList.add('time');
+    timeSpan.textContent = ` (${timestamp.getHours()}:${timestamp.getMinutes().toString().padStart(2, '0')})`;
+    timeSpan.title = timestamp.toLocaleString(); // Full date on hover
 
-                    textSpan.appendChild(timeSpan);
+    textSpan.appendChild(timeSpan);
 
-                    messageElement.appendChild(nicknameSpan);
-                    messageElement.appendChild(textSpan);
+    // Add nickname and text to the message
+    messageElement.appendChild(nicknameSpan);
+    messageElement.appendChild(textSpan);
 
-                    // Check if the sender is not the current user, play sound
-                    if (messageData.uid !== userUID) {
-                        messageSound.play();
-                    }
+    // Check if the sender is not the current user, play sound (same as before)
+    if (messageData.uid !== userUID) {
+        messageSound.play();
+    }
 
-                    messagesDiv.appendChild(messageElement);
+    // Now check if avatarUrl is missing, and fetch from Firebase if necessary
+    if (!messageData.avatarUrl) {
+        const userRef = ref(db, 'users/' + messageData.uid); // Get user data based on UID
+        onValue(userRef, (userSnapshot) => {
+            const user = userSnapshot.val();
+            console.log('Fetched User Data:', user); // Log the user data to check if the avatar is there
+            
+            if (user && user.avatarUrl) {
+                console.log('Avatar URL found in Firebase:', user.avatarUrl); // Log if avatarUrl is found
+                messageData.avatarUrl = user.avatarUrl; // Set the avatar URL from the user's profile
+                avatarElement.src = user.avatarUrl; // Update the avatar URL in the DOM
+            } else {
+                console.log('No avatar URL found for user:', messageData.uid); // Handle missing avatar case
+                avatarElement.src = ""; // No fallback to default avatar, leave it blank
+            }
+        });
+    } else {
+        console.log('Avatar URL already in messageData:', messageData.avatarUrl); // Log the existing avatarUrl
+        avatarElement.src = messageData.avatarUrl; // If avatar is already available, just set it
+    }
 
-                    // Auto scroll the chatbox down when a new message is added
-                    messagesDiv.scrollTop = messagesDiv.scrollHeight;
-                });
+    // Append the message to the chat only after avatar is possibly updated
+    messagesDiv.appendChild(messageElement);
+
+    // Auto scroll the chatbox down when a new message is added
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+});
+
+
+
+
+
+
+
+
 
                 // Setup input and send button
                 sendButton.addEventListener('click', sendMessage);
@@ -553,23 +603,75 @@
 
                 // Handle sending message
                 async function sendMessage() {
-                    const messageText = input.value.trim();
-                    if (messageText && messageText.length <= 500) {
-                        const messageData = {
-                            text: messageText,
-                            nickname: nickname,
-                            color: color,
-                            uid: userUID,
-                            timestamp: Date.now()
-                        };
-                        await push(messagesRef, messageData);
-                        input.value = ''; // Clear input field
-                    } else {
-                        alert('Please enter a valid message (max 500 characters)');
-                    }
-                }
+    const messageText = input.value.trim();
+    if (messageText && messageText.length <= 500) {
+        const messageData = {
+            text: messageText,
+            nickname: nickname,
+            color: color,
+            avatarUrl: avatarUrl, // Store the avatar URL
+            uid: userUID,
+            timestamp: Date.now()
+        };
+        await push(messagesRef, messageData);
+        input.value = ''; // Clear input field
+    } else {
+        alert('Please enter a valid message (max 500 characters)');
+    }
+}
+
             }
         });
+
+        // Fetch user details (including avatar) from Realtime Database
+function displayMessages() {
+    const messagesRef = ref(database, 'messages/');
+
+    onChildAdded(messagesRef, function(snapshot) {
+        const message = snapshot.val();
+        const messageElement = document.createElement("div");
+        messageElement.classList.add("message");
+
+        // Add avatar
+        const avatarElement = document.createElement('img');
+        avatarElement.classList.add('avatar');
+        avatarElement.src = messageData.avatarUrl ? messageData.avatarUrl : "";
+        messageElement.appendChild(avatarElement);
+
+        // Get the userId from the message
+        const userId = message.userId;
+
+        // Fetch the user data (avatar URL) from the database
+        const userRef = ref(database, 'users/' + userId);  // Get user by userId
+        onValue(userRef, (userSnapshot) => {
+            const user = userSnapshot.val();
+            if (user && user.avatarUrl) {
+                const avatarElement = document.createElement("img");
+                avatarElement.classList.add("avatar");
+                avatarElement.src = user.avatarUrl;  // Set avatar image source to the URL
+                messageElement.appendChild(avatarElement);
+            }
+
+            // Create username and message text elements
+            const usernameElement = document.createElement("span");
+            usernameElement.classList.add("nickname");
+            usernameElement.textContent = user.username;
+
+            const timeElement = document.createElement("span");
+            timeElement.classList.add("time");
+            const messageTime = new Date(message.timestamp);
+            timeElement.textContent = `${messageTime.getHours()}:${messageTime.getMinutes()}`;
+
+            // Append everything to the message element
+            messageElement.appendChild(usernameElement);
+            messageElement.appendChild(timeElement);
+            messageElement.appendChild(document.createTextNode(`: ${message.text}`));
+
+            // Add message to the chat display
+            document.getElementById("messages").appendChild(messageElement);
+        });
+    });
+}
     </script>
 </body>
 </html>
