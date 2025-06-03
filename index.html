@@ -54,23 +54,35 @@
         }
 
         .link {
-    display: block;
-    padding: 15px 20px;
-    margin: 10px 0;
-    background-color: #1e1e1e;
-    color: #ffffff;
-    text-decoration: none;
-    font-size: 1rem;
-    border-radius: 8px;
-    transition: background-color 0.3s, box-shadow 0.3s, transform 0.2s;
-}
+            display: block;
+            padding: 15px 20px;
+            margin: 10px 0;
+            background-color: #1e1e1e;
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 1rem;
+            border-radius: 8px;
+            transition: background-color 0.3s, box-shadow 0.3s, transform 0.2s;
+        }
 
-.link:hover {
-    background-color: #272727;
-    transform: translateY(-3px);
-    box-shadow: 0 0 10px #6c63ff, 0 0 20px #6c63ff;
-}
+        .link:hover {
+            background-color: #272727;
+            transform: translateY(-3px);
+            box-shadow: 0 0 10px #6c63ff, 0 0 20px #6c63ff;
+        }
 
+        .apple-music-embed {
+            margin: 20px 0;
+            border-radius: 8px;
+            overflow: hidden; /* Ensures the iframe respects border-radius */
+            max-width: 100%; /* Make sure it doesn't overflow */
+        }
+
+        .apple-music-embed iframe {
+            width: 100%;
+            height: 150px; /* Adjust height as needed */
+            border: none;
+        }
 
         footer {
             margin-top: 30px;
@@ -95,18 +107,18 @@
             opacity: 0.8;
             animation: fall linear infinite;
         }
-    .bottom-gif {
-        position: fixed;
-        bottom: 10px;
-        left: 50%;
-        transform: translateX(-50%);
-        z-index: 1000;
-    }
+        .bottom-gif {
+            position: fixed;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+        }
 
-    .bottom-gif img {
-        width: 100px; /* Adjust the siez as needed */
-        height: auto;
-    }
+        .bottom-gif img {
+            width: 100px; /* Adjust the siez as needed */
+            height: auto;
+        }
         @keyframes fall {
             0% {
                 transform: translateY(0) translateX(0);
@@ -128,6 +140,11 @@
         <a href="https://www.tiktok.com/@0d6p" class="link">TikTok</a>
         <a href="https://www.instagram.com/lvvuuv/" class="link">Instagram</a>
         <a href="https://chomikuj.pl/BlitZ_7" class="link">Chomikuj.pl</a>
+        
+        <div class="apple-music-embed">
+            <iframe src="https://music.apple.com/pl/album/1-moment-feat-buka/859875333?i=859875369" allow="autoplay *; encrypted-media *; fullscreen *; clipboard-write" sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-storage-access-by-user-activation allow-top-navigation-by-user-activation" style="width:100%; max-width:660px; overflow:hidden; border-radius:10px;" frameborder="0" allowfullscreen></iframe>
+        </div>
+
         <footer>
             Made with ❤️ by <a href="https://nevelose.xyz/">nevelose</a>
         </footer>
