@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>nevelose</title>
+    <link rel="icon" href="fajny_el_gato.ico" type="image/x-icon">
+    
+
+    <meta property="og:title" content="Blitz (nevelose) - Welcome to my website!" />
+    <meta property="og:description" content="" />
+    <meta property="og:image" content="https://i.imgur.com/kTMwiZ6.jpeg" />
+    <meta property="og:url" content="https://nevelose.xyz/" />
+    <meta property="og:type" content="website" />
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+
+            background-image: url('https://nevelose.xyz/files/starfield.gif');
+            background-repeat: repeat;
+            background-size: auto;
+            background-position: top left;
+            background-attachment: fixed;
+            background-color: #121212;
+        }
+
+        .container {
+            text-align: center;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        .avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 2px solid #ffffff;
+            margin: 0 auto 20px;
+        }
+
+        .name {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .bio {
+            font-size: 1rem;
+            color: #b3b3b3;
+            margin-bottom: 30px;
+        }
+
+        .link {
+            display: block;
+            padding: 15px 20px;
+            margin: 10px 0;
+            background-color: #1e1e1e;
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 1rem;
+            border-radius: 8px;
+            transition: background-color 0.3s, box-shadow 0.3s, transform 0.2s;
+        }
+
+        .link:hover {
+            background-color: #272727;
+            transform: translateY(-3px);
+            box-shadow: 0 0 10px #6c63ff, 0 0 20px #6c63ff;
+        }
+
+        .apple-music-embed {
+            margin: 20px 0;
+            border-radius: 8px;
+            overflow: hidden;
+            max-width: 100%;
+            background-color: #1a1a1a;
+        }
+
+        .apple-music-embed iframe {
+            width: 100%;
+            height: 175px;
+            border: none;
+        }
+
+        footer {
+            margin-top: 30px;
+            font-size: 0.8rem;
+            color: #6c6c6c;
+        }
+
+        footer a {
+            color: #ffffff;
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        .snowflake {
+            position: absolute;
+            top: -10px;
+            background-color: white;
+            border-radius: 50%;
+            opacity: 0.8;
+            animation: fall linear infinite;
+        }
+        .bottom-gif {
+            position: fixed;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+        }
+
+        .bottom-gif img {
+            width: 100px;
+            height: auto;
+        }
+        @keyframes fall {
+            0% {
+                transform: translateY(0) translateX(0);
+            }
+            100% {
+                transform: translateY(100vh) translateX(calc(var(--x-speed, 0px)));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="https://i.imgur.com/kTMwiZ6.jpeg" alt="Avatar" class="avatar">
+        <div class="name">Blitz (nevelose)</div>
+        <div class="bio"></div>
+
+        <a href="https://steamcommunity.com/profiles/76561199030122235" class="link">Steam</a>
+        <a href="https://bsky.app/profile/nevelose.xyz" class="link">Bluesky</a>
+        <a href="https://www.tiktok.com/@0d6p" class="link">TikTok</a>
+        <a href="https://www.instagram.com/lvvuuv/" class="link">Instagram</a>
+        <a href="https://chomikuj.pl/BlitZ_7" class="link">Chomikuj.pl</a>
+        
+        <div class="apple-music-embed">
+            <iframe allow="autoplay *; encrypted-media *; fullscreen *; clipboard-write" frameborder="0" height="175" style="width:100%;max-width:660px;overflow:hidden;border-radius:10px;" sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-storage-access-by-user-activation allow-top-navigation-by-user-activation" src="https://embed.music.apple.com/us/song/jorja-smith/1793116412"></iframe>
+        </div>
+
+        <script type="text/javascript" src="https://counter.websiteout.com/js/7/0/0/1"></script>
+
+        <footer>
+            <p style="margin-bottom: 5px;">
+                </p>
+            Made with ❤️ by <a href="https://nevelose.xyz/">nevelose</a>
+        </footer>
+    </div>
+<div class="bottom-gif">
+    <img src="https://nevelose.xyz/files/text.gif" alt="Animated GIF">
+</div>
+
+</body>
+</html>
