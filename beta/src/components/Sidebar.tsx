@@ -42,13 +42,12 @@ export function Sidebar({
     if (conversation.type === "group") {
       return "👥";
     }
-    
-    // For DMs, show the other user's avatar or status
+
     const otherParticipant = conversation.participants.find(
       (p: any) => (typeof p === "string" ? p : p._id) !== currentUser?._id
     );
-    
-    if (typeof otherParticipant !== "string" && otherParticipant?.profile?.avatarUrl) {
+
+    if (typeof otherParticipant === "object" && otherParticipant?.profile?.avatarUrl) {
       return (
         <div className="relative">
           <img
@@ -63,11 +62,11 @@ export function Sidebar({
         </div>
       );
     }
-    
+
     return (
       <div className="relative">
         <span className="text-2xl">👤</span>
-        {otherParticipant && (
+        {typeof otherParticipant === "object" && (
           <div className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-gray-900 ${getStatusColor(otherParticipant.profile?.status || "offline")}`}></div>
         )}
       </div>
@@ -75,25 +74,23 @@ export function Sidebar({
   };
 
   const getConversationName = (conversation: any) => {
-  if (conversation.type === "general") {
-    return "General Chat";
-  }
-  if (conversation.type === "group" && conversation.name) {
-    return conversation.name;
-  }
+    if (conversation.type === "general") {
+      return "General Chat";
+    }
+    if (conversation.type === "group" && conversation.name) {
+      return conversation.name;
+    }
 
-  const otherParticipant = conversation.participants.find(
-    (p: any) =>
-      (typeof p === "string" ? p : p._id) !== currentUser?._id
-  );
+    const otherParticipant = conversation.participants.find(
+      (p: any) => (typeof p === "string" ? p : p._id) !== currentUser?._id
+    );
 
-  if (typeof otherParticipant === "object") {
-    return otherParticipant?.profile?.displayName || "Unnamed User";
-  }
+    if (typeof otherParticipant === "object") {
+      return otherParticipant?.profile?.displayName || "Unnamed User";
+    }
 
-  return "Unknown User";
-};
-
+    return "Unknown User";
+  };
 
   const getUnreadCount = (conversationId: string) => {
     const unread = unreadCounts.find(u => u.conversationId === conversationId);
@@ -102,7 +99,7 @@ export function Sidebar({
 
   const handleStatusChange = async (newStatus: "online" | "away" | "dnd" | "offline") => {
     try {
-      await updateProfile({ 
+      await updateProfile({
         status: newStatus,
         doNotDisturb: newStatus === "dnd"
       });
@@ -144,7 +141,7 @@ export function Sidebar({
               ➕
             </button>
           </div>
-          
+
           <div className="space-y-1">
             {conversations.map((conversation) => (
               <button
@@ -196,7 +193,7 @@ export function Sidebar({
             </button>
             <div className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-gray-800 ${getStatusColor(currentUser?.profile?.status || "offline")}`}></div>
           </div>
-          
+
           <div className="flex-1 min-w-0">
             <div className="flex items-center space-x-1">
               <span className="text-sm font-medium text-white truncate">
@@ -213,37 +210,19 @@ export function Sidebar({
               >
                 {getStatusText(currentUser?.profile?.status || "offline")} ▼
               </button>
-              
+
               {showStatusMenu && (
                 <div className="absolute bottom-full left-0 mb-2 bg-gray-700 rounded-lg border border-gray-600 py-1 min-w-[150px] z-10">
-                  <button
-                    onClick={() => handleStatusChange("online")}
-                    className="w-full px-3 py-2 text-left text-sm text-white hover:bg-gray-600 transition-colors flex items-center space-x-2"
-                  >
-                    <div className="w-3 h-3 rounded-full status-online"></div>
-                    <span>Online</span>
-                  </button>
-                  <button
-                    onClick={() => handleStatusChange("away")}
-                    className="w-full px-3 py-2 text-left text-sm text-white hover:bg-gray-600 transition-colors flex items-center space-x-2"
-                  >
-                    <div className="w-3 h-3 rounded-full status-away"></div>
-                    <span>Away</span>
-                  </button>
-                  <button
-                    onClick={() => handleStatusChange("dnd")}
-                    className="w-full px-3 py-2 text-left text-sm text-white hover:bg-gray-600 transition-colors flex items-center space-x-2"
-                  >
-                    <div className="w-3 h-3 rounded-full status-dnd"></div>
-                    <span>Do Not Disturb</span>
-                  </button>
-                  <button
-                    onClick={() => handleStatusChange("offline")}
-                    className="w-full px-3 py-2 text-left text-sm text-white hover:bg-gray-600 transition-colors flex items-center space-x-2"
-                  >
-                    <div className="w-3 h-3 rounded-full status-offline"></div>
-                    <span>Invisible</span>
-                  </button>
+                  {["online", "away", "dnd", "offline"].map((status) => (
+                    <button
+                      key={status}
+                      onClick={() => handleStatusChange(status as any)}
+                      className="w-full px-3 py-2 text-left text-sm text-white hover:bg-gray-600 transition-colors flex items-center space-x-2"
+                    >
+                      <div className={`w-3 h-3 rounded-full ${getStatusColor(status)}`}></div>
+                      <span>{getStatusText(status)}</span>
+                    </button>
+                  ))}
                 </div>
               )}
             </div>
