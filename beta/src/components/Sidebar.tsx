@@ -75,18 +75,25 @@ export function Sidebar({
   };
 
   const getConversationName = (conversation: any) => {
-    if (conversation.type === "general") {
-      return "General Chat";
-    }
-    if (conversation.type === "group" && conversation.name) {
-      return conversation.name;
-    }
-    
-    const otherParticipant = conversation.participants.find(
-      (p: any) => p._id !== currentUser?._id
-    );
-    return otherParticipant?.profile?.displayName || "Unknown User";
-  };
+  if (conversation.type === "general") {
+    return "General Chat";
+  }
+  if (conversation.type === "group" && conversation.name) {
+    return conversation.name;
+  }
+
+  const otherParticipant = conversation.participants.find(
+    (p: any) =>
+      (typeof p === "string" ? p : p._id) !== currentUser?._id
+  );
+
+  if (typeof otherParticipant === "object") {
+    return otherParticipant?.profile?.displayName || "Unnamed User";
+  }
+
+  return "Unknown User";
+};
+
 
   const getUnreadCount = (conversationId: string) => {
     const unread = unreadCounts.find(u => u.conversationId === conversationId);
