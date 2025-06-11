@@ -1,0 +1,200 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* GG Sans Font - Discord's official font */
+@font-face {
+  font-family: 'gg sans';
+  src: url('https://discord.com/assets/fonts/ggsans-Normal.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'gg sans';
+  src: url('https://discord.com/assets/fonts/ggsans-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'gg sans';
+  src: url('https://discord.com/assets/fonts/ggsans-Semibold.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'gg sans';
+  src: url('https://discord.com/assets/fonts/ggsans-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+}
+
+* {
+  font-family: 'gg sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #36393f;
+  color: #dcddde;
+  overflow: hidden;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #2f3136;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #202225;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #1a1c1f;
+}
+
+/* Auth styles */
+.auth-input-field {
+  @apply w-full px-3 py-2 bg-gray-700 text-white rounded border border-gray-600 focus:border-blue-500 focus:outline-none;
+}
+
+.auth-button {
+  @apply w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+/* Discord-specific animations */
+.server-icon {
+  transition: all 0.2s ease;
+}
+
+.server-icon:hover {
+  border-radius: 16px !important;
+}
+
+.message-hover {
+  transition: background-color 0.1s ease;
+}
+
+.message-hover:hover {
+  background-color: rgba(4, 4, 5, 0.07);
+}
+
+/* Status indicators */
+.status-online {
+  background-color: #3ba55c;
+}
+
+.status-idle {
+  background-color: #faa61a;
+}
+
+.status-dnd {
+  background-color: #ed4245;
+}
+
+.status-invisible {
+  background-color: #747f8d;
+}
+
+/* Media embeds */
+.media-embed {
+  max-width: 400px;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+.media-embed img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.media-embed video {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Profile modal */
+.profile-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.profile-card {
+  background: #36393f;
+  border-radius: 8px;
+  width: 340px;
+  overflow: hidden;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.24);
+}
+
+/* Settings modal */
+.settings-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.settings-content {
+  background: #36393f;
+  border-radius: 8px;
+  width: 90vw;
+  max-width: 900px;
+  height: 80vh;
+  display: flex;
+  overflow: hidden;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.24);
+}
+
+/* Status dropdown */
+.status-dropdown {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  right: 0;
+  background: #18191c;
+  border-radius: 8px;
+  padding: 8px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.24);
+  z-index: 50;
+}
+
+/* Tooltip */
+.tooltip {
+  position: absolute;
+  background: #18191c;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  z-index: 1000;
+  pointer-events: none;
+}
