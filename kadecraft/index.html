@@ -24,7 +24,6 @@
       --border: #334155;
     }
   }
-  html,body { height: 100%; }
   body {
     margin: 0;
     font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial;
@@ -33,51 +32,69 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 20px;
     min-height: 100vh;
+    padding: 20px;
   }
   .card {
     background: var(--card);
-    border-radius: 14px;
-    padding: 20px;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.08);
-    width: min(820px, 98%);
-    transition: transform .18s ease;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+    width: min(760px, 100%);
+    transition: transform 0.25s;
   }
   .card.updating { transform: scale(1.01); }
-  header { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
-  header img { width: 56px; height: 56px; border-radius: 8px; object-fit: cover; background:#ddd; }
+  header {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+  header img {
+    width: 56px;
+    height: 56px;
+    border-radius: 8px;
+    background: #ddd;
+    object-fit: cover;
+  }
   h1 { margin: 0; font-size: 1.2rem; }
-  .meta { font-size: .95rem; margin-top: 4px; color: var(--subtle); }
-  .status { margin-top: 6px; font-weight:700; }
+  .meta { font-size: .92rem; margin-top: 4px; }
+  .status { font-weight: 700; margin-top: 6px; }
   .online { color: #22c55e; }
   .offline { color: #ef4444; }
-  .grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-top: 12px; }
-  .label { color: var(--subtle); font-size: .88rem; }
-  .value { font-weight:700; }
-  .players { margin-top: 14px; }
-  .player-list { display:flex;flex-wrap:wrap;gap:8px;margin-top:10px; }
-  .player { padding:6px 10px;border-radius:999px;border:1px solid var(--border); background:var(--bg); }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 8px; }
+  .label { color: var(--subtle); font-size: .9rem; }
+  .value { font-weight: 700; }
+  .players { margin-top: 16px; }
+  .player-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .player { background: var(--bg); border: 1px solid var(--border); padding: 6px 10px; border-radius: 999px; }
   .empty { color: var(--subtle); font-style: italic; }
-  footer { margin-top: 14px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; color:var(--subtle); }
-  button { background: var(--accent); color: #fff; border: 0; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight:700; }
-  @media (max-width:600px) { .grid { grid-template-columns: 1fr; } }
-  /* small motd reset */
-  #motd { margin-top: 6px; line-height: 1.1; }
+  footer { margin-top: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; color: var(--subtle); }
+  button { background: var(--accent); color: white; border: 0; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: 700; }
+  @media (max-width:560px){.grid{grid-template-columns:1fr}}
+  /* Minecraft color styles */
+  .mc-black{color:#000}.mc-dark_blue{color:#0000aa}.mc-dark_green{color:#00aa00}.mc-dark_aqua{color:#00aaaa}
+  .mc-dark_red{color:#aa0000}.mc-dark_purple{color:#aa00aa}.mc-gold{color:#ffaa00}.mc-gray{color:#aaaaaa}
+  .mc-dark_gray{color:#555555}.mc-blue{color:#5555ff}.mc-green{color:#55ff55}.mc-aqua{color:#55ffff}
+  .mc-red{color:#ff5555}.mc-light_purple{color:#ff55ff}.mc-yellow{color:#ffff55}.mc-white{color:#ffffff}
+  .mc-bold{font-weight:700}.mc-italic{font-style:italic}.mc-underlined{text-decoration:underline}
+  .mc-strikethrough{text-decoration:line-through}.mc-obfuscated{animation:obf 1s infinite alternate}
+  @keyframes obf{0%{opacity:1}100%{opacity:.2}}
 </style>
 </head>
 <body>
-  <div class="card" id="card" role="region" aria-label="KadeCraft server status">
+  <div class="card" id="card">
     <header>
-      <img id="favicon" alt="server icon">
+      <img id="favicon" alt="Server icon" />
       <div>
         <h1 id="serverName">KadeCraft</h1>
-        <div id="motd" class="meta">Loading MOTD…</div>
-        <div id="status" class="status">Checking…</div>
+        <div class="meta" id="motd">Loading MOTD…</div>
+        <div class="status" id="status">Checking…</div>
       </div>
     </header>
 
-    <div class="grid" id="details" aria-hidden="false">
+    <div class="grid" id="details">
       <div><div class="label">Version</div><div class="value" id="version">—</div></div>
       <div><div class="label">Ping</div><div class="value" id="ping">— ms</div></div>
       <div><div class="label">Players</div><div class="value" id="count">—</div></div>
@@ -89,173 +106,88 @@
 
     <footer>
       <div id="lastUpdated">Last updated: —</div>
-      <div>
-        <button id="refresh">Refresh</button>
-      </div>
+      <div><button id="refresh">Refresh</button></div>
     </footer>
   </div>
 
 <script>
-/* CONFIG */
-const IP = "nl22.icehost.pl";
-const PORT = 25732;
-const INTERVAL_MS = 10000; // update every 10s
+const IP="nl22.icehost.pl",PORT=25732;
+const card=document.getElementById("card"),faviconEl=document.getElementById("favicon"),
+motdEl=document.getElementById("motd"),statusEl=document.getElementById("status"),
+versionEl=document.getElementById("version"),pingEl=document.getElementById("ping"),
+countEl=document.getElementById("count"),playersContainer=document.getElementById("playersContainer"),
+lastUpdated=document.getElementById("lastUpdated"),refreshBtn=document.getElementById("refresh");
 
-/* DOM */
-const card = document.getElementById('card');
-const faviconEl = document.getElementById('favicon');
-const motdEl = document.getElementById('motd');
-const statusEl = document.getElementById('status');
-const versionEl = document.getElementById('version');
-const pingEl = document.getElementById('ping');
-const countEl = document.getElementById('count');
-const playersContainer = document.getElementById('playersContainer');
-const lastUpdated = document.getElementById('lastUpdated');
-const refreshBtn = document.getElementById('refresh');
-
-let intervalHandle = null;
-
-/* helper: safe innerHTML assignment */
-function setMotdHtml(html){
-  // small safety: allow only basic tags returned by api.mcstatus (span, b, strong, i, br)
-  // create a template, strip disallowed elements
-  const tpl = document.createElement('template');
-  tpl.innerHTML = html || "";
-  const allowed = new Set(['SPAN','B','STRONG','I','EM','BR','U','SMALL']);
-  function sanitize(node){
-    const children = Array.from(node.childNodes);
-    for(const child of children){
-      if(child.nodeType === Node.ELEMENT_NODE){
-        if(!allowed.has(child.nodeName)){
-          // replace element with its text content (keeps text but removes tags)
-          const text = document.createTextNode(child.textContent);
-          node.replaceChild(text, child);
-        } else {
-          // keep element, but sanitize its children
-          sanitize(child);
-          // remove any attributes except style/class
-          for(const attr of Array.from(child.attributes)){
-            if(!['style','class'].includes(attr.name)) child.removeAttribute(attr.name);
-          }
-        }
+function colorizeMotd(text){
+  if(!text)return "";
+  const map={
+    0:"mc-black",1:"mc-dark_blue",2:"mc-dark_green",3:"mc-dark_aqua",4:"mc-dark_red",5:"mc-dark_purple",
+    6:"mc-gold",7:"mc-gray",8:"mc-dark_gray",9:"mc-blue",a:"mc-green",b:"mc-aqua",c:"mc-red",
+    d:"mc-light_purple",e:"mc-yellow",f:"mc-white",
+    l:"mc-bold",m:"mc-strikethrough",n:"mc-underlined",o:"mc-italic",k:"mc-obfuscated"
+  };
+  let html="",open=[],parts=text.split(/(§[0-9A-FK-ORa-fk-or])/g);
+  for(let part of parts){
+    if(!part)continue;
+    const m=part.match(/^§([0-9A-FK-ORa-fk-or])$/i);
+    if(m){
+      const code=m[1].toLowerCase();
+      if(code==="r"){ // reset
+        html+="</span>".repeat(open.length); open=[];
+      } else {
+        const cls=map[code];
+        if(cls){ html+=`<span class="${cls}">`; open.push("</span>"); }
       }
-      // text nodes are fine
-    }
+    } else html+=part.replace(/</g,"&lt;").replace(/>/g,"&gt;");
   }
-  sanitize(tpl.content);
-  motdEl.innerHTML = tpl.innerHTML || "(no MOTD)";
+  html+=open.reverse().join("");
+  return html;
 }
 
-/* fetch with no cache + measure client ping */
-async function fetchStatus(noCache = false){
-  card.classList.add('updating');
+function stripMcCodes(s){return s.replace(/§[0-9A-FK-ORa-fk-or]/g,'');}
+async function fetchWithPing(url){
+  const t0=performance.now();const resp=await fetch(url,{cache:'no-store'});
+  const data=await resp.json();const ping=Math.round(performance.now()-t0);
+  return {data,ping};
+}
+
+async function update(){
+  card.classList.add("updating");
   try{
-    // timestamp and headers to force fresh data
-    const url = `https://api.mcstatus.io/v2/status/java/${encodeURIComponent(IP)}:${encodeURIComponent(PORT)}?t=${Date.now()}`;
-    const t0 = performance.now();
-    const res = await fetch(url, {
-      method: 'GET',
-      cache: 'no-store',
-      headers: {
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'Pragma': 'no-cache'
-      }
-    });
-    const duration = Math.round(performance.now() - t0);
-
-    if(!res.ok) throw new Error('Network response ' + res.status);
-
-    const data = await res.json();
-
-    // favicon: use mcstatus.io icon endpoint (data URI or URL)
-    faviconEl.src = `https://api.mcstatus.io/v2/icon/${IP}:${PORT}`;
-
-    // MOTD: mcstatus returns html in data.motd.html (preferred)
-    if(data.motd && data.motd.html){
-      setMotdHtml(data.motd.html);
-    } else if(data.motd && data.motd.clean){
-      // array of lines
-      setMotdHtml(data.motd.clean.map(l => `<span>${escapeHtml(l)}</span>`).join('<br>'));
-    } else {
-      motdEl.textContent = "(no MOTD)";
-    }
-
-    // status
+    const {data,ping}=await fetchWithPing(`https://mcapi.us/server/status?ip=${IP}&port=${PORT}`);
+    faviconEl.src=data.favicon||`https://api.mcstatus.io/v2/icon/${IP}:${PORT}`;
+    let motdRaw=data.motd?.raw||data.motd?.clean||data.motd||data.description||"";
+    if(Array.isArray(motdRaw))motdRaw=motdRaw.join(" ");
+    const motdHtml=colorizeMotd(typeof motdRaw==="string"?motdRaw:JSON.stringify(motdRaw));
+    motdEl.innerHTML=motdHtml||"";
     if(data.online){
-      statusEl.textContent = "Online";
-      statusEl.className = "status online";
+      statusEl.textContent="Online";statusEl.className="status online";
     } else {
-      statusEl.textContent = "Offline";
-      statusEl.className = "status offline";
+      statusEl.textContent="Offline";statusEl.className="status offline";
     }
-
-    // version & ping
-    versionEl.textContent = data.version?.name_clean || "Unknown";
-    // prefer API latency if present, otherwise measured duration
-    pingEl.textContent = (typeof data.latency === 'number' && data.latency >= 0) ? data.latency : duration;
-
-    // players
-    const online = data.players?.online ?? 0;
-    const max = data.players?.max ?? '?';
-    countEl.textContent = `${online}/${max}`;
-
-    playersContainer.innerHTML = "";
-    const list = data.players?.list;
-    if(Array.isArray(list) && list.length > 0){
-      const wrapper = document.createElement('div');
-      wrapper.className = 'player-list';
-      list.forEach(p => {
-        const el = document.createElement('div');
-        el.className = 'player';
-        // mcstatus provides name_clean or name_raw
-        el.textContent = p.name_clean || p.name || p.name_raw || p.raw || '(unknown)';
-        wrapper.appendChild(el);
+    versionEl.textContent=data.server?.name||data.version||"Unknown";
+    pingEl.textContent=ping;
+    countEl.textContent=`${data.players.now}/${data.players.max}`;
+    playersContainer.innerHTML="";
+    if(data.players.sample?.length){
+      const list=document.createElement("div");list.className="player-list";
+      data.players.sample.forEach(p=>{
+        const div=document.createElement("div");div.className="player";div.textContent=p.name;
+        list.appendChild(div);
       });
-      playersContainer.appendChild(wrapper);
-    } else {
-      playersContainer.innerHTML = '<div class="empty">No players online.</div>';
-    }
-
-    lastUpdated.textContent = "Last updated: " + new Date().toLocaleTimeString();
-  }catch(err){
-    console.error('Fetch error', err);
-    statusEl.textContent = "Error";
-    statusEl.className = "status offline";
-    motdEl.textContent = "Error fetching server data.";
-    playersContainer.innerHTML = `<div class="empty">${escapeHtml(err.message)}</div>`;
-    pingEl.textContent = '—';
-    lastUpdated.textContent = "Last updated: —";
-  } finally {
-    // remove updating state shortly after to keep visual feedback
-    setTimeout(()=>card.classList.remove('updating'), 220);
-  }
+      playersContainer.appendChild(list);
+    } else playersContainer.innerHTML='<div class="empty">No players online.</div>';
+    lastUpdated.textContent="Last updated: "+new Date().toLocaleTimeString();
+  }catch(e){
+    motdEl.textContent="Error fetching MOTD";
+    statusEl.textContent="Error";statusEl.className="status offline";
+    pingEl.textContent="—";playersContainer.innerHTML=`<div class="empty">Error: ${e.message}</div>`;
+  }finally{setTimeout(()=>card.classList.remove("updating"),250);}
 }
 
-/* small helper to escape plain text when needed */
-function escapeHtml(s){
-  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-
-/* start auto-updating */
-function startAutoUpdating(){
-  if(intervalHandle) clearInterval(intervalHandle);
-  intervalHandle = setInterval(()=>fetchStatus(false), INTERVAL_MS);
-}
-
-/* visibility change: refresh immediately when tab becomes visible */
-document.addEventListener('visibilitychange', ()=> {
-  if(!document.hidden){
-    fetchStatus(true);
-  }
-});
-
-/* manual refresh */
-refreshBtn.addEventListener('click', ()=> fetchStatus(true));
-
-/* initial load */
-fetchStatus(true);
-startAutoUpdating();
-
+refreshBtn.onclick=update;
+update();
+setInterval(update,30000);
 </script>
 </body>
 </html>
